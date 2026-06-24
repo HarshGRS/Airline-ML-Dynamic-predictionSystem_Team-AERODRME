@@ -1,0 +1,55 @@
+{
+  "model_version": "v1.0.0",
+  "trained_at": "2026-06-24T13:48:45.152633+00:00",
+  "dataset": "Kaggle Flight Price Prediction (Clean_Dataset.csv)",
+  "n_rows": 300153,
+  "n_train": 240122,
+  "n_test": 60031,
+  "metrics": {
+    "mae": 2136.7459750348876,
+    "rmse": 3741.982341156707,
+    "mape_pct": 15.064966884372488,
+    "r2": 0.9728362495482441
+  },
+  "feature_importance": {
+    "class": 0.8411476612091064,
+    "stops": 0.06268075108528137,
+    "airline": 0.053962428122758865,
+    "duration": 0.01225360855460167,
+    "days_left": 0.012113936245441437,
+    "destination_city": 0.005835943855345249,
+    "source_city": 0.005646790377795696,
+    "arrival_time": 0.0038917555939406157,
+    "departure_time": 0.0024671757128089666
+  },
+  "feature_columns": [
+    "airline",
+    "source_city",
+    "departure_time",
+    "stops",
+    "arrival_time",
+    "destination_city",
+    "class",
+    "duration",
+    "days_left"
+  ],
+  "price_range": {
+    "min": 1105.0,
+    "max": 123071.0,
+    "mean": 20889.660523133203
+  },
+  "numeric_feature_stats": {
+    "duration": {
+      "mean": 12.221020812718846,
+      "std": 7.191997238119017,
+      "min": 0.83,
+      "max": 49.83
+    },
+    "days_left": {
+      "mean": 26.004750910369044,
+      "std": 13.561003687093569,
+      "min": 1.0,
+      "max": 49.0
+    }
+  }
+}
