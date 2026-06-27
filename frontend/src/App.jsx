@@ -9,6 +9,8 @@ import DashboardPage from './pages/DashboardPage.jsx'
 import WatchlistPage from './pages/WatchlistPage.jsx'
 import PredictPage from './pages/PredictPage.jsx'
 import CalendarPage from './pages/CalendarPage.jsx'
+import AlertsPage from './pages/AlertsPage.jsx'
+import AdminPage from './pages/AdminPage.jsx'
 import LoginPage from './pages/LoginPage.jsx'
 import NotFoundPage from './pages/NotFoundPage.jsx'
 import ProtectedRoute from './components/ProtectedRoute.jsx'
@@ -59,6 +61,8 @@ export default function App() {
             <Route path="/dashboard/predict" element={<PredictPage />} />
             <Route path="/dashboard/calendar" element={<CalendarPage />} />
             <Route path="/dashboard/watchlist" element={<WatchlistPage />} />
+            <Route path="/dashboard/alerts" element={<AlertsPage />} />
+            <Route path="/dashboard/admin" element={<AdminPage />} />
             {/* Future sub-pages: etc. */}
             <Route path="/dashboard/*" element={<DashboardPage />} />
           </Routes>

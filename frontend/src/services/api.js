@@ -66,4 +66,9 @@ export const api = {
 
   // Alerts
   getAlerts: () => fetchApi('/alerts'),
+
+  // Admin
+  getAdmin: () => fetchApi('/admin'),
+  triggerRetrain: () => fetchApi('/admin/retrain', { method: 'POST' }),
+  runCronJob: (jobName) => fetchApi(`/admin/cron/${jobName}/run`, { method: 'POST' }),
 }
