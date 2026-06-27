@@ -5,7 +5,7 @@ class Settings(BaseSettings):
     app_name: str = "Airline Dynamic Pricing API"
     api_v1_prefix: str = "/api/v1"
     # Comma-separated list, e.g. "http://localhost:3000,https://yourapp.vercel.app"
-    cors_origins: str = "http://localhost:3000"
+    cors_origins: str = "http://localhost:3000,http://localhost:5173"
     model_version: str = "v1.0.0"
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
