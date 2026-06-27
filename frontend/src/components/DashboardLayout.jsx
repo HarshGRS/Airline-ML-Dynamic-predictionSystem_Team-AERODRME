@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { NavLink, Link } from 'react-router-dom'
+import { NavLink, Link, useLocation } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { api } from '../services/api'
 import {
@@ -26,8 +26,14 @@ const NAV_ITEMS = [
 
 export default function DashboardLayout({ children }) {
   const { user, logout } = useAuth()
+  const location = useLocation()
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [systemInfo, setSystemInfo] = useState({ status: 'checking', version: 'UNKNOWN', latency: 0 })
+
+  // Derive current page label from URL
+  const pathSegments = location.pathname.replace(/\/$/, '').split('/')
+  const lastSegment = pathSegments[pathSegments.length - 1] || 'dashboard'
+  const breadcrumbLabel = lastSegment.toUpperCase()
 
   useEffect(() => {
     const start = performance.now()
@@ -131,7 +137,7 @@ export default function DashboardLayout({ children }) {
               {sidebarOpen ? <X size={16} /> : <Menu size={16} />}
             </button>
             <span className="console-breadcrumb">
-              CONSOLE / <span>DASHBOARD</span>
+              CONSOLE / <span>{breadcrumbLabel}</span>
             </span>
           </div>
           <div className="console-topbar-right">

@@ -12,3 +12,10 @@ def predict_price(
     service: PredictionService = Depends(get_prediction_service),
 ) -> PredictResponse:
     return service.predict(request)
+
+@router.post("/predict/batch", response_model=list[PredictResponse])
+def predict_batch(
+    requests: list[PredictRequest],
+    service: PredictionService = Depends(get_prediction_service),
+) -> list[PredictResponse]:
+    return service.predict_batch(requests)

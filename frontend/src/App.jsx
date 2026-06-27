@@ -6,6 +6,9 @@ import { useAuth } from './context/AuthContext'
 import HomePage from './pages/HomePage.jsx'
 import ResultsPage from './pages/ResultsPage.jsx'
 import DashboardPage from './pages/DashboardPage.jsx'
+import WatchlistPage from './pages/WatchlistPage.jsx'
+import PredictPage from './pages/PredictPage.jsx'
+import CalendarPage from './pages/CalendarPage.jsx'
 import LoginPage from './pages/LoginPage.jsx'
 import NotFoundPage from './pages/NotFoundPage.jsx'
 import ProtectedRoute from './components/ProtectedRoute.jsx'
@@ -53,7 +56,10 @@ export default function App() {
         <DashboardLayout>
           <Routes>
             <Route path="/dashboard" element={<DashboardPage />} />
-            {/* Future sub-pages: /dashboard/predict, /dashboard/calendar, etc. */}
+            <Route path="/dashboard/predict" element={<PredictPage />} />
+            <Route path="/dashboard/calendar" element={<CalendarPage />} />
+            <Route path="/dashboard/watchlist" element={<WatchlistPage />} />
+            {/* Future sub-pages: etc. */}
             <Route path="/dashboard/*" element={<DashboardPage />} />
           </Routes>
         </DashboardLayout>

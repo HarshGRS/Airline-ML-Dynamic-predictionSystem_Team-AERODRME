@@ -41,4 +41,29 @@ export const api = {
   getHealth: () => fetchApi('/health'),
   getModelInfo: () => fetchApi('/model/info'),
   getDashboard: () => fetchApi('/dashboard'),
+
+  // Prediction
+  predict: (payload) =>
+    fetchApi('/predict', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    }),
+  predictBatch: (payloads) =>
+    fetchApi('/predict/batch', {
+      method: 'POST',
+      body: JSON.stringify(payloads),
+    }),
+
+  // Watchlist
+  getWatchlists: () => fetchApi('/watchlists'),
+  createWatchlist: (payload) =>
+    fetchApi('/watchlists', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    }),
+  deleteWatchlist: (id) =>
+    fetchApi(`/watchlists/${id}`, { method: 'DELETE' }).catch(() => null),
+
+  // Alerts
+  getAlerts: () => fetchApi('/alerts'),
 }
