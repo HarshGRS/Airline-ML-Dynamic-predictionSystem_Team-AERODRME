@@ -69,6 +69,43 @@ class PredictionService:
             out_of_distribution=is_ood,
         )
 
+    def predict_batch(self, requests: list[PredictRequest]) -> list[PredictResponse]:
+        if not requests:
+            return []
+        rows = [
+            {
+                "airline": req.airline.value,
+                "source_city": req.source_city.value,
+                "departure_time": req.departure_time.value,
+                "stops": req.stops.value,
+                "arrival_time": req.arrival_time.value,
+                "destination_city": req.destination_city.value,
+                "class": req.flight_class.value,
+                "duration": req.duration,
+                "days_left": req.days_left,
+            }
+            for req in requests
+        ]
+        df = pd.DataFrame(rows)[FEATURE_COLUMNS]
+        encoded = self.pipeline.transform(df)
+        predicted_prices = self.model.predict(encoded)
+
+        responses = []
+        for req, price in zip(requests, predicted_prices):
+            price_float = float(price)
+            is_ood = self._is_out_of_distribution(req.duration, req.days_left)
+            margin = self.mae * (2.0 if is_ood else 1.0)
+            responses.append(
+                PredictResponse(
+                    predicted_price=round(price_float, 2),
+                    confidence_low=round(max(price_float - margin, 0), 2),
+                    confidence_high=round(price_float + margin, 2),
+                    model_version=self.metadata["model_version"],
+                    out_of_distribution=is_ood,
+                )
+            )
+        return responses
+
 
 _service: PredictionService | None = None
 

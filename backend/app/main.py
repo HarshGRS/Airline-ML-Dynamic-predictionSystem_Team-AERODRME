@@ -6,7 +6,7 @@ from fastapi.responses import JSONResponse
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 
-from app.api.v1 import auth, dashboard, health, model, predict, saved_searches, watchlists
+from app.api.v1 import auth, dashboard, health, model, predict, saved_searches, watchlists, alerts
 from app.core.config import settings
 from app.core.logging import configure_logging
 from app.core.rate_limit import limiter
@@ -34,6 +34,7 @@ app.include_router(model.router, prefix=settings.api_v1_prefix)
 app.include_router(auth.router, prefix=settings.api_v1_prefix)
 app.include_router(watchlists.router, prefix=settings.api_v1_prefix)
 app.include_router(saved_searches.router, prefix=settings.api_v1_prefix)
+app.include_router(alerts.router, prefix=settings.api_v1_prefix)
 
 
 @app.exception_handler(Exception)
