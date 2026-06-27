@@ -1,217 +1,323 @@
-import { useEffect, useMemo } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useEffect, useState } from 'react'
 import {
-  ArrowRight,
-  Bookmark,
-  BookmarkCheck,
-  Plane,
-  TrendingDown,
-  TrendingUp,
-  X,
-} from 'lucide-react'
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+} from 'recharts'
+import { api } from '../services/api'
 
-function formatPrice(price) {
-  return new Intl.NumberFormat('en-IN', {
-    style: 'currency',
-    currency: 'INR',
-    maximumFractionDigits: 0,
-  }).format(price)
-}
-
-function formatDate(iso) {
-  if (!iso) return '—'
-  try {
-    return new Date(iso).toLocaleDateString('en-IN', {
-      day: 'numeric',
-      month: 'short',
-      year: 'numeric',
-    })
-  } catch {
-    return iso
-  }
-}
-
-// Simulate price drift since the flight was added (±8% random walk seeded by id)
-function priceDelta(flight) {
-  const seed = flight.id ?? 0
-  const pct = ((seed % 17) - 8) * 0.6  // -4.8% to +4.8%
-  return {
-    pct: pct.toFixed(1),
-    amount: Math.round(flight.priceContext * (pct / 100)),
-    dir: pct > 0.3 ? 'up' : pct < -0.3 ? 'down' : 'stable',
-  }
-}
-
-function WatchlistCard({ flight, onRemove }) {
-  const delta = useMemo(() => priceDelta(flight), [flight])
-  const currentPrice = flight.priceContext + delta.amount
-
+/* ─────────────────────────────────────────────────────
+   KPI CARD with mini Sparkline
+───────────────────────────────────────────────────── */
+function KpiCard({ label, value, delta, deltaType, sparkline }) {
   return (
-    <article className="wl-card">
-      <div className="wl-card-header">
-        <div className="wl-route">
-          <div className="wl-route-cities">
-            <span className="wl-city">{flight.from}</span>
-            <Plane size={14} className="wl-plane-icon" />
-            <span className="wl-city">{flight.to}</span>
-          </div>
-          <span className="wl-airline">{flight.airline}</span>
-        </div>
-
-        <button
-          type="button"
-          className="wl-remove-btn"
-          onClick={() => onRemove(flight.id)}
-          aria-label={`Remove ${flight.from} to ${flight.to} from watchlist`}
-        >
-          <X size={14} strokeWidth={2.5} />
-        </button>
+    <div className="kpi-card">
+      <p className="kpi-label">{label}</p>
+      <p className="kpi-value">{value}</p>
+      <span className={`kpi-delta ${deltaType}`}>{delta}</span>
+      <div className="kpi-sparkline">
+        <ResponsiveContainer width="100%" height="100%">
+          <AreaChart data={sparkline} margin={{ top: 2, right: 0, left: 0, bottom: 0 }}>
+            <defs>
+              <linearGradient id={`spark-${label}`} x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#22d3ee" stopOpacity={0.35} />
+                <stop offset="100%" stopColor="#22d3ee" stopOpacity={0} />
+              </linearGradient>
+            </defs>
+            <Area
+              type="monotone"
+              dataKey="v"
+              stroke="#22d3ee"
+              strokeWidth={1.5}
+              fill={`url(#spark-${label})`}
+              dot={false}
+              isAnimationActive={false}
+            />
+          </AreaChart>
+        </ResponsiveContainer>
       </div>
-
-      <div className="wl-card-price-row">
-        <div>
-          <span className="wl-label">Current estimate</span>
-          <strong className="wl-price">{formatPrice(currentPrice)}</strong>
-        </div>
-        <div
-          className={`wl-delta wl-delta--${delta.dir}`}
-          title={`${delta.pct}% since added`}
-        >
-          {delta.dir === 'up'
-            ? <TrendingUp size={14} />
-            : delta.dir === 'down'
-              ? <TrendingDown size={14} />
-              : <span style={{ fontSize: '0.7rem' }}>≈</span>
-          }
-          <span>{delta.pct > 0 ? '+' : ''}{delta.pct}%</span>
-        </div>
-      </div>
-
-      <div className="wl-card-meta">
-        <div>
-          <span className="wl-label">Cabin</span>
-          <strong>{flight.travelClass}</strong>
-        </div>
-        <div>
-          <span className="wl-label">Trip</span>
-          <strong>{flight.tripType}</strong>
-        </div>
-        <div>
-          <span className="wl-label">Depart</span>
-          <strong>{formatDate(flight.departDate)}</strong>
-        </div>
-        <div>
-          <span className="wl-label">Stops</span>
-          <strong>{flight.stops}</strong>
-        </div>
-      </div>
-
-      <div className="wl-card-verdict">
-        <span
-          className={`verdict-badge verdict-badge--${flight.verdict === 'Book now' ? 'buy' : 'wait'}`}
-        >
-          {flight.verdict}
-        </span>
-        <span className="wl-added">
-          Added {formatDate(flight.addedAt?.slice(0, 10))}
-        </span>
-      </div>
-    </article>
+    </div>
   )
 }
 
-export default function DashboardPage({ watchlist, onRemove }) {
-  const navigate = useNavigate()
+/* ─────────────────────────────────────────────────────
+   CUSTOM TOOLTIP for price trend chart
+───────────────────────────────────────────────────── */
+function TrendTooltip({ active, payload, label }) {
+  if (!active || !payload?.length) return null
+  return (
+    <div
+      style={{
+        background: 'rgba(12, 9, 32, 0.95)',
+        border: '1px solid rgba(34, 211, 238, 0.3)',
+        borderRadius: '10px',
+        padding: '0.55rem 0.85rem',
+        fontSize: '0.78rem',
+        fontFamily: "'Space Grotesk', sans-serif",
+      }}
+    >
+      <div style={{ color: '#9993c2', marginBottom: '0.2rem' }}>{label}</div>
+      <div style={{ color: '#22d3ee', fontWeight: 700, fontSize: '1rem' }}>
+        ₹{payload[0].value.toLocaleString('en-IN')}
+      </div>
+    </div>
+  )
+}
+
+/* ─────────────────────────────────────────────────────
+   FORMATTERS
+───────────────────────────────────────────────────── */
+const formatINR = (val) => new Intl.NumberFormat('en-IN').format(val)
+
+const generateSparklineFromTrend = (trendData) => {
+  // Take last 14 days and extract price
+  const subset = trendData.slice(-14)
+  return subset.map((t) => ({ v: t.price }))
+}
+
+const mapTagClass = (tag) => {
+  if (tag === 'PRICE_SPIKE') return 'spike'
+  if (tag === 'PRICE_DROP') return 'drop'
+  if (tag === 'VOLATILITY') return 'volatility'
+  if (tag === 'DEMAND_SURGE') return 'demand'
+  return 'drop'
+}
+
+/* ─────────────────────────────────────────────────────
+   DASHBOARD PAGE
+───────────────────────────────────────────────────── */
+export default function DashboardPage() {
+  const [data, setData] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
 
   useEffect(() => {
-    document.title = 'Dashboard — AERODROME'
+    document.title = 'Dashboard — AERODROME Console'
+
+    api.getDashboard()
+      .then((res) => {
+        setData(res)
+        setLoading(false)
+      })
+      .catch((err) => {
+        console.error("Dashboard fetch error:", err)
+        setError(err.message)
+        setLoading(false)
+      })
   }, [])
 
-  const upCount = watchlist.filter((f) => priceDelta(f).dir === 'up').length
-  const downCount = watchlist.filter((f) => priceDelta(f).dir === 'down').length
-  const bookNowCount = watchlist.filter((f) => f.verdict === 'Book now').length
+  if (loading) {
+    return (
+      <div style={{ display: 'grid', placeItems: 'center', height: '50vh', color: 'var(--text-muted)' }}>
+        Loading dashboard data...
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div style={{ display: 'grid', placeItems: 'center', height: '50vh', color: '#f87171' }}>
+        <div style={{ textAlign: 'center' }}>
+          <h2>Failed to load dashboard</h2>
+          <p>{error}</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (!data) return null
+
+  // Build the KPI array from the backend response
+  const kpiData = [
+    {
+      label: 'AVG PRICE',
+      value: `₹${formatINR(data.kpi.avg_price)}`,
+      delta: `${data.kpi.avg_price_delta > 0 ? '+' : ''}${data.kpi.avg_price_delta}%`,
+      deltaType: data.kpi.avg_price_delta > 0 ? 'positive' : 'negative',
+      sparkline: generateSparklineFromTrend(data.price_trend),
+    },
+    {
+      label: 'VOLATILITY',
+      value: `${data.kpi.volatility}%`,
+      delta: `${data.kpi.volatility_delta > 0 ? '+' : ''}${data.kpi.volatility_delta}pp`,
+      deltaType: data.kpi.volatility_delta > 0 ? 'negative' : 'positive',
+      sparkline: generateSparklineFromTrend(data.price_trend).reverse(), // just visually different
+    },
+    {
+      label: 'ROUTES UP',
+      value: formatINR(data.kpi.routes_up),
+      delta: `${data.kpi.routes_up_pct}%`,
+      deltaType: 'positive',
+      sparkline: generateSparklineFromTrend(data.price_trend),
+    },
+    {
+      label: 'ROUTES DOWN',
+      value: formatINR(data.kpi.routes_down),
+      delta: `${data.kpi.routes_down_pct}%`,
+      deltaType: 'negative',
+      sparkline: generateSparklineFromTrend(data.price_trend).reverse(),
+    },
+    {
+      label: 'HIGH DEMAND',
+      value: formatINR(data.kpi.high_demand),
+      delta: `${data.kpi.high_demand_pct}%`,
+      deltaType: 'positive',
+      sparkline: generateSparklineFromTrend(data.price_trend),
+    },
+    {
+      label: 'ANOMALIES',
+      value: data.kpi.anomalies.toString(),
+      delta: `+${data.kpi.anomalies_delta}`,
+      deltaType: 'negative', // anomalies are generally bad
+      sparkline: generateSparklineFromTrend(data.price_trend),
+    },
+  ]
 
   return (
-    <div className="dashboard-shell">
-      {/* ── Dashboard Header ── */}
-      <header className="dashboard-hero">
-        <div className="dashboard-hero-copy">
-          <span className="eyebrow">Your watchlist</span>
-          <h1>Flight price dashboard</h1>
-          <p className="lede">
-            Track the flights you saved and monitor how fares are moving. The ML model re-estimates prices each time you visit.
-          </p>
+    <>
+      {/* Page header */}
+      <div className="console-page-header">
+        <h1>Dashboard</h1>
+        <p>Real-time airline pricing analytics and market intelligence.</p>
+      </div>
+
+      {/* KPI strip */}
+      <div className="kpi-strip">
+        {kpiData.map((kpi) => (
+          <KpiCard key={kpi.label} {...kpi} />
+        ))}
+      </div>
+
+      {/* Middle row: Top Routes + Anomaly Feed */}
+      <div className="console-middle-row">
+        {/* Top Routes */}
+        <div className="console-panel">
+          <div className="console-panel-header">
+            <h2 className="console-panel-title">TOP_ROUTES</h2>
+            <a href="#" className="console-panel-link">VIEW_ALL →</a>
+          </div>
+          <table className="routes-table">
+            <thead>
+              <tr>
+                <th>Route</th>
+                <th>Price</th>
+                <th>7D_Pred</th>
+                <th>Δ</th>
+              </tr>
+            </thead>
+            <tbody>
+              {data.top_routes.map((r) => (
+                <tr key={`${r.from}-${r.to}`}>
+                  <td>
+                    <span className="route-name">{r.from}</span>
+                    <span className="route-arrow">→</span>
+                    <span className="route-name">{r.to}</span>
+                  </td>
+                  <td className="route-price">₹{formatINR(r.price)}</td>
+                  <td className="route-pred">₹{formatINR(r.predicted)}</td>
+                  <td className={`route-delta ${r.delta >= 0 ? 'positive' : 'negative'}`}>
+                    {r.delta >= 0 ? '+' : ''}{r.delta}%
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
 
-        <div className="dashboard-stats">
-          <div className="dash-stat">
-            <span>Saved flights</span>
-            <strong>{watchlist.length}</strong>
+        {/* Anomaly Feed */}
+        <div className="console-panel">
+          <div className="console-panel-header">
+            <h2 className="console-panel-title">ANOMALY_FEED</h2>
+            <a href="#" className="console-panel-link">OPEN_CENTER →</a>
           </div>
-          <div className="dash-stat">
-            <span>Prices rising</span>
-            <strong className="stat-up">{upCount}</strong>
-          </div>
-          <div className="dash-stat">
-            <span>Prices falling</span>
-            <strong className="stat-down">{downCount}</strong>
-          </div>
-          <div className="dash-stat">
-            <span>Book now signals</span>
-            <strong className="stat-signal">{bookNowCount}</strong>
-          </div>
-        </div>
-      </header>
-
-      {/* ── Watchlist grid ── */}
-      {watchlist.length === 0 ? (
-        <div className="empty-watchlist">
-          <div className="empty-watchlist-inner">
-            <div className="empty-icon">
-              <Bookmark size={32} strokeWidth={1.5} />
-            </div>
-            <h2>Your watchlist is empty</h2>
-            <p>
-              Search for a flight and click <strong>Add to watchlist</strong> on the results page. We'll track the fare and show price movement here.
-            </p>
-            <button
-              type="button"
-              className="search-button"
-              onClick={() => navigate('/')}
-            >
-              Search flights <ArrowRight size={14} strokeWidth={2.5} />
-            </button>
+          <div className="anomaly-list">
+            {data.anomalies.length > 0 ? data.anomalies.map((a, i) => (
+              <div className="anomaly-row" key={i}>
+                <span className={`anomaly-tag ${mapTagClass(a.tag)}`}>{a.tag}</span>
+                <div className="anomaly-info">
+                  <span className="anomaly-route">{a.route}</span>
+                  <span className="anomaly-desc">{a.desc}</span>
+                </div>
+                <div className="anomaly-meta">
+                  <span className={`anomaly-pct ${a.pct >= 0 ? 'positive' : 'negative'}`}>
+                    {a.pct >= 0 ? '+' : ''}{a.pct}%
+                  </span>
+                  <span className="anomaly-time">{a.time}</span>
+                </div>
+              </div>
+            )) : (
+              <div style={{ padding: '1.5rem', color: 'var(--text-muted)', fontSize: '0.85rem' }}>
+                No significant anomalies detected in current model run.
+              </div>
+            )}
           </div>
         </div>
-      ) : (
-        <>
-          {/* Alert banner if any prices are rising sharply */}
-          {bookNowCount > 0 && (
-            <div className="dashboard-alert">
-              <TrendingUp size={16} />
-              <span>
-                <strong>{bookNowCount} flight{bookNowCount > 1 ? 's' : ''}</strong> on your watchlist have a <em>Book now</em> signal — prices may be rising.
-              </span>
-            </div>
-          )}
+      </div>
 
-          <div className="wl-grid">
-            {watchlist.map((flight) => (
-              <WatchlistCard key={flight.id} flight={flight} onRemove={onRemove} />
-            ))}
-          </div>
-
-          <div className="dashboard-footer-cta">
-            <button
-              type="button"
-              className="search-button"
-              onClick={() => navigate('/')}
-            >
-              Search more flights <ArrowRight size={14} strokeWidth={2.5} />
-            </button>
-          </div>
-        </>
-      )}
-    </div>
+      {/* Price Trend Chart */}
+      <div className="console-chart-panel">
+        <div className="console-chart-header">
+          <h2 className="console-chart-title">
+            PRICE_TREND
+            <span className="chart-dot" />
+            {data.spotlight_route}
+            <span className="chart-dot" />
+            30D
+          </h2>
+        </div>
+        <div className="console-chart-body">
+          <ResponsiveContainer width="100%" height="100%">
+            <AreaChart data={data.price_trend} margin={{ top: 10, right: 20, left: 10, bottom: 0 }}>
+              <defs>
+                <linearGradient id="trendGradient" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#22d3ee" stopOpacity={0.3} />
+                  <stop offset="50%" stopColor="#22d3ee" stopOpacity={0.08} />
+                  <stop offset="100%" stopColor="#22d3ee" stopOpacity={0} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid
+                strokeDasharray="3 3"
+                stroke="rgba(109, 94, 245, 0.08)"
+                vertical={false}
+              />
+              <XAxis
+                dataKey="date"
+                tick={{ fill: '#635d8a', fontSize: 11, fontFamily: "'Space Grotesk'" }}
+                axisLine={{ stroke: 'rgba(109, 94, 245, 0.1)' }}
+                tickLine={false}
+                interval="preserveStartEnd"
+              />
+              <YAxis
+                tick={{ fill: '#635d8a', fontSize: 11, fontFamily: "'Space Grotesk'" }}
+                axisLine={false}
+                tickLine={false}
+                domain={['dataMin - 500', 'dataMax + 500']}
+                tickFormatter={(v) => `₹${formatINR(v)}`}
+                width={70}
+              />
+              <Tooltip content={<TrendTooltip />} cursor={{ stroke: 'rgba(34, 211, 238, 0.3)' }} />
+              <Area
+                type="monotone"
+                dataKey="price"
+                stroke="#22d3ee"
+                strokeWidth={2}
+                fill="url(#trendGradient)"
+                dot={false}
+                activeDot={{
+                  r: 4,
+                  stroke: '#22d3ee',
+                  strokeWidth: 2,
+                  fill: '#080613',
+                }}
+              />
+            </AreaChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+    </>
   )
 }

@@ -1,15 +1,21 @@
-import { Routes, Route } from 'react-router-dom'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { Routes, Route, useLocation } from 'react-router-dom'
+import { useCallback, useEffect, useState } from 'react'
 import { NavLink, useNavigate } from 'react-router-dom'
-import { LayoutDashboard, Plane } from 'lucide-react'
+import { LayoutDashboard, Plane, LogOut } from 'lucide-react'
+import { useAuth } from './context/AuthContext'
 import HomePage from './pages/HomePage.jsx'
 import ResultsPage from './pages/ResultsPage.jsx'
 import DashboardPage from './pages/DashboardPage.jsx'
+import LoginPage from './pages/LoginPage.jsx'
 import NotFoundPage from './pages/NotFoundPage.jsx'
+import ProtectedRoute from './components/ProtectedRoute.jsx'
+import DashboardLayout from './components/DashboardLayout.jsx'
 import './App.css'
 
 export default function App() {
   const navigate = useNavigate()
+  const location = useLocation()
+  const { user, logout } = useAuth()
   const [watchlist, setWatchlist] = useState(() => {
     try {
       return JSON.parse(localStorage.getItem('aerodrome_watchlist') || '[]')
@@ -37,6 +43,25 @@ export default function App() {
     setWatchlist((prev) => prev.filter((f) => f.id !== id))
   }, [])
 
+  // Check if we're on a dashboard route (uses its own layout)
+  const isDashboard = location.pathname.startsWith('/dashboard')
+
+  // Dashboard routes — rendered with DashboardLayout (sidebar, no topbar/footer)
+  if (isDashboard) {
+    return (
+      <ProtectedRoute>
+        <DashboardLayout>
+          <Routes>
+            <Route path="/dashboard" element={<DashboardPage />} />
+            {/* Future sub-pages: /dashboard/predict, /dashboard/calendar, etc. */}
+            <Route path="/dashboard/*" element={<DashboardPage />} />
+          </Routes>
+        </DashboardLayout>
+      </ProtectedRoute>
+    )
+  }
+
+  // Normal routes — rendered with topbar + footer shell
   return (
     <main className="page-shell">
       <header className="topbar">
@@ -67,27 +92,42 @@ export default function App() {
               <span className="topnav-badge">{watchlist.length}</span>
             )}
           </NavLink>
-          <button type="button" className="signin-btn">Sign in</button>
+
+          {user ? (
+            <div className="user-menu">
+              <img
+                src={user.picture}
+                alt={user.name}
+                className="user-avatar"
+                referrerPolicy="no-referrer"
+              />
+              <span className="user-name">{user.givenName}</span>
+              <button
+                type="button"
+                className="signout-btn"
+                onClick={logout}
+                title="Sign out"
+              >
+                <LogOut size={14} strokeWidth={2.4} />
+              </button>
+            </div>
+          ) : (
+            <NavLink to="/login" className="signin-btn" style={{ textDecoration: 'none' }}>
+              Sign in
+            </NavLink>
+          )}
         </nav>
       </header>
 
       <Routes>
         <Route path="/" element={<HomePage />} />
+        <Route path="/login" element={<LoginPage />} />
         <Route
           path="/results"
           element={
             <ResultsPage
               onAddToWatchlist={addToWatchlist}
               watchlist={watchlist}
-            />
-          }
-        />
-        <Route
-          path="/dashboard"
-          element={
-            <DashboardPage
-              watchlist={watchlist}
-              onRemove={removeFromWatchlist}
             />
           }
         />
