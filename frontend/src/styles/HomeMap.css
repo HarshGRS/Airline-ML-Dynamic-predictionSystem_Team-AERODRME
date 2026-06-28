@@ -1,0 +1,178 @@
+/* Home Map Section */
+.hm-section {
+  width: 100%;
+  padding: 2rem;
+  margin-top: 4rem; /* push down below the search form */
+  background: var(--bg-main);
+  display: flex;
+  justify-content: center;
+}
+
+.hm-container {
+  position: relative;
+  width: 100%;
+  max-width: 1400px;
+  height: 600px;
+  background: #070a14;
+  border: 1px solid rgba(109, 94, 245, 0.15);
+  border-radius: 4px;
+  overflow: hidden;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5), inset 0 0 100px rgba(109, 94, 245, 0.05);
+}
+
+/* Grid overlay to mimic the reference image */
+.hm-container::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-image: 
+    linear-gradient(rgba(109, 94, 245, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(109, 94, 245, 0.05) 1px, transparent 1px);
+  background-size: 100px 100px;
+  background-position: center;
+  z-index: 10;
+  pointer-events: none;
+}
+
+/* Map Wrapper */
+.hm-map-wrapper {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  z-index: 1;
+}
+
+/* Leaflet Overrides */
+.hm-map-wrapper .leaflet-container {
+  background: transparent !important;
+}
+
+/* Overlay UI */
+.hm-overlay-top {
+  position: absolute;
+  top: 2rem;
+  left: 2rem;
+  right: 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  z-index: 20;
+  pointer-events: none;
+}
+
+.hm-header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.hm-eyebrow {
+  color: #6d5ef5;
+  font-family: monospace;
+  font-weight: 700;
+  font-size: 0.85rem;
+  letter-spacing: 0.05em;
+  text-shadow: 0 0 10px rgba(109, 94, 245, 0.5);
+}
+
+.hm-header h2 {
+  color: #fff;
+  font-family: 'Inter', sans-serif;
+  font-weight: 800;
+  font-size: 1.8rem;
+  margin: 0;
+}
+
+.hm-header p {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.95rem;
+  margin: 0;
+}
+
+.hm-action {
+  pointer-events: auto;
+}
+
+.hm-action a {
+  color: #6d5ef5;
+  font-family: monospace;
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-decoration: none;
+  letter-spacing: 0.05em;
+  transition: all 0.2s ease;
+  text-shadow: 0 0 5px rgba(109, 94, 245, 0.3);
+}
+
+.hm-action a:hover {
+  text-shadow: 0 0 15px rgba(109, 94, 245, 0.8);
+}
+
+.hm-overlay-bottom {
+  position: absolute;
+  bottom: 2rem;
+  right: 2rem;
+  z-index: 20;
+}
+
+.hm-overlay-bottom span {
+  color: rgba(255, 255, 255, 0.4);
+  font-family: monospace;
+  font-size: 0.8rem;
+  letter-spacing: 0.1em;
+}
+
+/* Glowing Dots and Arcs */
+.hub-marker {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hub-dot {
+  width: 6px;
+  height: 6px;
+  background: #6d5ef5;
+  border-radius: 50%;
+  box-shadow: 0 0 10px #6d5ef5, 0 0 20px #6d5ef5;
+}
+
+.hub-arc {
+  transition: opacity 0.3s;
+}
+.hub-arc:hover {
+  opacity: 1 !important;
+  stroke-width: 2.5;
+  filter: drop-shadow(0 0 5px #6d5ef5);
+}
+
+.interactive-arc {
+  cursor: pointer;
+}
+
+/* Tooltips */
+.hub-tooltip {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  color: rgba(255, 255, 255, 0.8) !important;
+  font-family: monospace !important;
+  font-size: 0.7rem !important;
+  font-weight: bold !important;
+  letter-spacing: 0.05em !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+.hub-tooltip::before {
+  display: none !important; /* hide default leaflet arrow */
+}
+
+@media (max-width: 900px) {
+  .hm-overlay-top {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  .hm-container {
+    height: 400px;
+  }
+}

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ArrowLeftRight, ArrowRight, BrainCircuit, Plane, TrendingUp } from 'lucide-react'
+import HomeMap from '../components/HomeMap'
 
 const mlCities = ['Bangalore', 'Chennai', 'Delhi', 'Hyderabad', 'Kolkata', 'Mumbai']
 const airlines = ['AirAsia', 'Air India', 'GO FIRST', 'Indigo', 'SpiceJet', 'Vistara']
@@ -309,6 +310,8 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      <HomeMap />
 
       <section className="features-section" id="features">
         <div className="section-heading">
