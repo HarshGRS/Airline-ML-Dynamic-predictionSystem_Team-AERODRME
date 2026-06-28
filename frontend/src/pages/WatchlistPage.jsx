@@ -1,11 +1,8 @@
 import { useEffect, useState } from 'react'
-import { Trash2, ToggleLeft, ToggleRight, Bell } from 'lucide-react'
-import { api } from '../services/api'
+import { Trash2, Bookmark, Plane, TrendingUp, TrendingDown, Minus, Clock, Calendar, ArrowRight } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 
-/* ── city options from backend City enum ───────────── */
-const CITIES = ['Bangalore', 'Chennai', 'Delhi', 'Hyderabad', 'Kolkata', 'Mumbai']
-
-/* helper: "Bangalore" → "BLR" style abbreviation table */
+/* ── city abbreviation table ──────────────────────── */
 const CITY_CODE = {
   Bangalore: 'BLR',
   Chennai: 'MAA',
@@ -24,280 +21,211 @@ const CITY_LABEL = {
   Mumbai: 'Mumbai',
 }
 
-/* pick a channel label to show per item (backend doesn't store channel,
-   so we pick a visual rotation for demo consistency) */
-const CHANNEL_CYCLE = ['EMAIL', 'PUSH', 'WEBHOOK']
-
-function routeLabel(src, dst) {
-  return `${CITY_CODE[src] ?? src} → ${CITY_CODE[dst] ?? dst}`
+function codeOf(city) {
+  return CITY_CODE[city] ?? city
 }
 
-function routeSubLabel(src, dst) {
-  return `${CITY_LABEL[src] ?? src} to ${CITY_LABEL[dst] ?? dst}`
+function labelOf(city) {
+  return CITY_LABEL[city] ?? city
 }
 
-/* ── Single alert row ──────────────────────────────── */
-function AlertRow({ item, index, onToggle, onDelete }) {
-  const [armed, setArmed] = useState(item.armed ?? true)
-  const channel = CHANNEL_CYCLE[index % 3]
+/* ── Trend icon helper ────────────────────────────── */
+function TrendIcon({ dir }) {
+  if (dir === 'up') return <TrendingUp size={13} strokeWidth={2.5} />
+  if (dir === 'down') return <TrendingDown size={13} strokeWidth={2.5} />
+  return <Minus size={13} strokeWidth={2.5} />
+}
 
-  function handleToggle() {
-    const next = !armed
-    setArmed(next)
-    onToggle(item.id, next)
+function trendLabel(dir) {
+  if (dir === 'up') return 'Rising'
+  if (dir === 'down') return 'Dropping'
+  return 'Stable'
+}
+
+/* ── Relative time helper ─────────────────────────── */
+function timeAgo(isoString) {
+  if (!isoString) return ''
+  const ms = Date.now() - new Date(isoString).getTime()
+  const mins = Math.floor(ms / 60000)
+  if (mins < 1) return 'Just now'
+  if (mins < 60) return `${mins}m ago`
+  const hrs = Math.floor(mins / 60)
+  if (hrs < 24) return `${hrs}h ago`
+  const days = Math.floor(hrs / 24)
+  return `${days}d ago`
+}
+
+/* ── Single watchlist card ────────────────────────── */
+function WatchlistCard({ item, onDelete }) {
+  const [removing, setRemoving] = useState(false)
+
+  function handleDelete() {
+    setRemoving(true)
+    // Small delay for exit animation
+    setTimeout(() => onDelete(item.id), 280)
   }
 
   return (
-    <div className={`wl-alert-row ${armed ? 'armed' : 'disarmed'}`}>
-      {/* Status badge */}
-      <span className={`wl-status-badge ${armed ? 'badge-armed' : 'badge-disarmed'}`}>
-        {armed ? 'ARMED' : 'DISARMED'}
-      </span>
-
-      {/* Route info */}
-      <div className="wl-alert-route">
-        <span className="wl-alert-route-label">{routeLabel(item.source_city, item.destination_city)}</span>
-        <span className="wl-alert-route-sub">{routeSubLabel(item.source_city, item.destination_city)}</span>
-      </div>
-
-      {/* Target price */}
-      <div className="wl-alert-target">
-        <span className="wl-target-label">target</span>
-        <span className="wl-target-price">₹{Number(item.target_price).toLocaleString('en-IN')}</span>
-      </div>
-
-      {/* Channel */}
-      <span className="wl-channel-badge">{channel}</span>
-
-      {/* Actions */}
-      <div className="wl-alert-actions">
+    <div className={`wl-route-card ${removing ? 'wl-card-exit' : ''}`}>
+      {/* Top: Route header */}
+      <div className="wl-card-header">
+        <div className="wl-card-route">
+          <span className="wl-card-code">{codeOf(item.from)}</span>
+          <ArrowRight size={14} strokeWidth={2} className="wl-card-arrow" />
+          <span className="wl-card-code">{codeOf(item.to)}</span>
+        </div>
         <button
           type="button"
-          className="wl-action-btn"
-          onClick={handleToggle}
-          title={armed ? 'Disarm alert' : 'Arm alert'}
+          className="wl-card-delete"
+          onClick={handleDelete}
+          title="Remove from watchlist"
         >
-          {armed
-            ? <ToggleRight size={14} strokeWidth={2} />
-            : <ToggleLeft size={14} strokeWidth={2} />}
-          TOGGLE
+          <Trash2 size={13} strokeWidth={2} />
         </button>
-        <button
-          type="button"
-          className="wl-action-btn wl-delete-btn"
-          onClick={() => onDelete(item.id)}
-          title="Delete alert"
-        >
-          <Trash2 size={14} strokeWidth={2} />
-          DELETE
-        </button>
+      </div>
+
+      {/* Sub-route label */}
+      <div className="wl-card-sub-route">
+        {labelOf(item.from)} to {labelOf(item.to)}
+      </div>
+
+      {/* Info grid */}
+      <div className="wl-card-info-grid">
+        {item.airline && (
+          <div className="wl-card-info">
+            <Plane size={12} strokeWidth={2} />
+            <span>{item.airline}</span>
+          </div>
+        )}
+        {item.departDate && (
+          <div className="wl-card-info">
+            <Calendar size={12} strokeWidth={2} />
+            <span>{item.departDate}</span>
+          </div>
+        )}
+        {item.travelClass && (
+          <div className="wl-card-info">
+            <span className="wl-card-class-dot" />
+            <span>{item.travelClass}</span>
+          </div>
+        )}
+        {item.stops != null && (
+          <div className="wl-card-info">
+            <span className="wl-card-class-dot" />
+            <span>{item.stops === 'zero' || item.stops === 0 ? 'Non-stop' : `${item.stops} stop${item.stops > 1 ? 's' : ''}`}</span>
+          </div>
+        )}
+      </div>
+
+      {/* Bottom row: Price + Verdict + Trend */}
+      <div className="wl-card-bottom">
+        <div className="wl-card-price">
+          ₹{Number(item.priceContext || 0).toLocaleString('en-IN')}
+        </div>
+
+        {item.verdict && (
+          <span className={`wl-card-verdict ${item.verdict === 'Book now' ? 'verdict-book' : 'verdict-wait'}`}>
+            {item.verdict}
+          </span>
+        )}
+
+        {item.trendDir && (
+          <span className={`wl-card-trend trend-${item.trendDir}`}>
+            <TrendIcon dir={item.trendDir} />
+            {trendLabel(item.trendDir)}
+          </span>
+        )}
+
+        {item.addedAt && (
+          <span className="wl-card-time">
+            <Clock size={11} strokeWidth={2} />
+            {timeAgo(item.addedAt)}
+          </span>
+        )}
       </div>
     </div>
   )
 }
 
 /* ── Main Page ─────────────────────────────────────── */
-export default function WatchlistPage() {
-  const [watchlists, setWatchlists] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
-  const [submitting, setSubmitting] = useState(false)
-  const [formError, setFormError] = useState(null)
-  const [success, setSuccess] = useState(false)
-
-  /* Form state */
-  const [sourceCity, setSourceCity] = useState('Delhi')
-  const [destCity, setDestCity] = useState('Mumbai')
-  const [targetPrice, setTargetPrice] = useState('')
-  const [channel, setChannel] = useState('EMAIL')
+export default function WatchlistPage({ watchlist = [], onRemove }) {
+  const navigate = useNavigate()
 
   useEffect(() => {
     document.title = 'Watchlist — AERODROME Console'
-    fetchWatchlists()
   }, [])
 
-  function fetchWatchlists() {
-    setLoading(true)
-    api.getWatchlists()
-      .then((res) => {
-        setWatchlists(res)
-        setLoading(false)
-      })
-      .catch((err) => {
-        setError(err.message)
-        setLoading(false)
-      })
-  }
-
-  async function handleSubmit(e) {
-    e.preventDefault()
-    setFormError(null)
-    setSuccess(false)
-
-    if (sourceCity === destCity) {
-      setFormError('Source and destination cities must differ.')
-      return
-    }
-    const price = parseFloat(targetPrice)
-    if (!targetPrice || isNaN(price) || price <= 0) {
-      setFormError('Enter a valid target price.')
-      return
-    }
-
-    setSubmitting(true)
-    try {
-      const newItem = await api.createWatchlist({
-        source_city: sourceCity,
-        destination_city: destCity,
-        target_price: price,
-      })
-      setWatchlists((prev) => [newItem, ...prev])
-      setTargetPrice('')
-      setSuccess(true)
-      setTimeout(() => setSuccess(false), 3000)
-    } catch (err) {
-      setFormError(err.message)
-    } finally {
-      setSubmitting(false)
-    }
-  }
-
-  async function handleDelete(id) {
-    await api.deleteWatchlist(id)
-    setWatchlists((prev) => prev.filter((w) => w.id !== id))
-  }
-
-  function handleToggle(id, armed) {
-    // Toggle is UI-only for now (no backend endpoint for toggle)
-    setWatchlists((prev) =>
-      prev.map((w) => (w.id === id ? { ...w, armed } : w))
-    )
-  }
+  // Compute summary stats
+  const totalRoutes = watchlist.length
+  const uniqueRoutes = new Set(watchlist.map((w) => `${w.from}-${w.to}`)).size
+  const bookNowCount = watchlist.filter((w) => w.verdict === 'Book now').length
+  const avgPrice = totalRoutes > 0
+    ? Math.round(watchlist.reduce((sum, w) => sum + (w.priceContext || 0), 0) / totalRoutes)
+    : 0
 
   return (
     <>
       {/* Page header */}
       <div className="console-page-header">
         <h1>Watchlist</h1>
-        <p>Arm drop alerts on any route — fires when the predicted price falls below your target.</p>
+        <p>Your saved flight routes — track prices and find the best time to book.</p>
       </div>
 
-      {/* Two-column layout */}
-      <div className="wl-layout">
-        {/* ── Left: New Alert Form ─────────────────── */}
-        <div className="wl-form-panel console-panel">
-          <div className="console-panel-header">
-            <h2 className="console-panel-title">NEW_ALERT</h2>
-          </div>
+      {/* Summary strip */}
+      <div className="wl-summary-strip">
+        <div className="wl-summary-stat">
+          <span className="wl-stat-value">{totalRoutes}</span>
+          <span className="wl-stat-label">SAVED</span>
+        </div>
+        <div className="wl-summary-stat">
+          <span className="wl-stat-value">{uniqueRoutes}</span>
+          <span className="wl-stat-label">ROUTES</span>
+        </div>
+        <div className="wl-summary-stat">
+          <span className="wl-stat-value">{bookNowCount}</span>
+          <span className="wl-stat-label">BOOK NOW</span>
+        </div>
+        <div className="wl-summary-stat">
+          <span className="wl-stat-value">{avgPrice > 0 ? `₹${avgPrice.toLocaleString('en-IN')}` : '—'}</span>
+          <span className="wl-stat-label">AVG PRICE</span>
+        </div>
+      </div>
 
-          <form className="wl-form" onSubmit={handleSubmit}>
-            {/* Route selector */}
-            <div className="wl-field">
-              <label className="wl-label">ROUTE</label>
-              <select
-                className="wl-select"
-                value={`${sourceCity}|||${destCity}`}
-                onChange={(e) => {
-                  const [src, dst] = e.target.value.split('|||')
-                  setSourceCity(src)
-                  setDestCity(dst)
-                }}
-              >
-                {CITIES.flatMap((src) =>
-                  CITIES.filter((dst) => dst !== src).map((dst) => (
-                    <option key={`${src}-${dst}`} value={`${src}|||${dst}`}>
-                      {CITY_CODE[src]} → {CITY_CODE[dst]}
-                    </option>
-                  ))
-                )}
-              </select>
-            </div>
-
-            {/* Target price */}
-            <div className="wl-field">
-              <label className="wl-label" htmlFor="wl-price">TARGET_PRICE_INR</label>
-              <input
-                id="wl-price"
-                type="number"
-                min="1"
-                max="200000"
-                step="1"
-                className="wl-input"
-                placeholder="e.g. 8000"
-                value={targetPrice}
-                onChange={(e) => setTargetPrice(e.target.value)}
-              />
-            </div>
-
-            {/* Channel toggle */}
-            <div className="wl-field">
-              <label className="wl-label">CHANNEL</label>
-              <div className="wl-channel-group">
-                {['EMAIL', 'PUSH', 'WEBHOOK'].map((ch) => (
-                  <button
-                    key={ch}
-                    type="button"
-                    className={`wl-channel-btn ${channel === ch ? 'active' : ''}`}
-                    onClick={() => setChannel(ch)}
-                  >
-                    {ch}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {formError && (
-              <p className="wl-form-error">{formError}</p>
-            )}
-            {success && (
-              <p className="wl-form-success">Alert armed successfully.</p>
-            )}
-
-            <button
-              type="submit"
-              className="wl-arm-btn"
-              disabled={submitting}
-            >
-              <Bell size={14} strokeWidth={2.5} />
-              {submitting ? 'ARMING...' : 'ARM_ALERT'}
-            </button>
-          </form>
+      {/* Watchlist items */}
+      <div className="console-panel wl-items-panel">
+        <div className="console-panel-header">
+          <h2 className="console-panel-title">SAVED_ROUTES</h2>
+          {totalRoutes > 0 && (
+            <span className="wl-total-badge">{totalRoutes} TOTAL</span>
+          )}
         </div>
 
-        {/* ── Right: Active Alerts ─────────────────── */}
-        <div className="wl-alerts-panel console-panel">
-          <div className="console-panel-header">
-            <h2 className="console-panel-title">ACTIVE_ALERTS</h2>
-            {!loading && (
-              <span className="wl-total-badge">{watchlists.length} TOTAL</span>
-            )}
-          </div>
-
-          <div className="wl-alerts-body">
-            {loading ? (
-              <div className="wl-state-msg">Loading alerts...</div>
-            ) : error ? (
-              <div className="wl-state-msg wl-state-error">
-                {error}
-              </div>
-            ) : watchlists.length === 0 ? (
-              <div className="wl-empty">
-                <Bell size={32} strokeWidth={1.5} style={{ opacity: 0.3 }} />
-                <p>No active watchlist alerts.</p>
-                <p>Create one using the form on the left.</p>
-              </div>
-            ) : (
-              watchlists.map((item, i) => (
-                <AlertRow
+        <div className="wl-items-body">
+          {totalRoutes === 0 ? (
+            <div className="wl-empty">
+              <Bookmark size={36} strokeWidth={1.5} style={{ opacity: 0.3 }} />
+              <p>No saved routes yet.</p>
+              <p>Search for a flight and add it to your watchlist from the results page.</p>
+              <button
+                type="button"
+                className="wl-empty-cta"
+                onClick={() => navigate('/dashboard/predict')}
+              >
+                <Plane size={14} strokeWidth={2.5} />
+                SEARCH_FLIGHTS
+              </button>
+            </div>
+          ) : (
+            <div className="wl-cards-grid">
+              {watchlist.map((item) => (
+                <WatchlistCard
                   key={item.id}
                   item={item}
-                  index={i}
-                  onToggle={handleToggle}
-                  onDelete={handleDelete}
+                  onDelete={onRemove}
                 />
-              ))
-            )}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </>

@@ -1,9 +1,10 @@
 import { Routes, Route, useLocation } from 'react-router-dom'
 import { useCallback, useEffect, useState } from 'react'
 import { NavLink, useNavigate } from 'react-router-dom'
-import { LayoutDashboard, Plane, LogOut } from 'lucide-react'
+import { LayoutDashboard, Plane, LogOut, Map as MapIcon } from 'lucide-react'
 import { useAuth } from './context/AuthContext'
 import HomePage from './pages/HomePage.jsx'
+import MapPage from './pages/MapPage.jsx'
 import ResultsPage from './pages/ResultsPage.jsx'
 import DashboardPage from './pages/DashboardPage.jsx'
 import WatchlistPage from './pages/WatchlistPage.jsx'
@@ -60,7 +61,7 @@ export default function App() {
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/dashboard/predict" element={<PredictPage />} />
             <Route path="/dashboard/calendar" element={<CalendarPage />} />
-            <Route path="/dashboard/watchlist" element={<WatchlistPage />} />
+            <Route path="/dashboard/watchlist" element={<WatchlistPage watchlist={watchlist} onRemove={removeFromWatchlist} />} />
             <Route path="/dashboard/alerts" element={<AlertsPage />} />
             <Route path="/dashboard/admin" element={<AdminPage />} />
             {/* Future sub-pages: etc. */}
@@ -91,6 +92,13 @@ export default function App() {
           >
             <Plane size={14} strokeWidth={2.2} />
             Search
+          </NavLink>
+          <NavLink
+            to="/map"
+            className={({ isActive }) => `topnav-link ${isActive ? 'active' : ''}`}
+          >
+            <MapIcon size={14} strokeWidth={2.2} />
+            Map
           </NavLink>
           <NavLink
             to="/dashboard"
@@ -131,6 +139,7 @@ export default function App() {
 
       <Routes>
         <Route path="/" element={<HomePage />} />
+        <Route path="/map" element={<MapPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route
           path="/results"

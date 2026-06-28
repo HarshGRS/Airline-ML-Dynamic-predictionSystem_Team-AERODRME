@@ -285,7 +285,7 @@ export default function DashboardPage() {
                 vertical={false}
               />
               <XAxis
-                dataKey="date"
+                dataKey="day"
                 tick={{ fill: '#635d8a', fontSize: 11, fontFamily: "'Space Grotesk'" }}
                 axisLine={{ stroke: 'rgba(109, 94, 245, 0.1)' }}
                 tickLine={false}
