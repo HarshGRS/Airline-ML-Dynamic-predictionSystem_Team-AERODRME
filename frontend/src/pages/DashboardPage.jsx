@@ -8,6 +8,7 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from 'recharts'
+import { Link } from 'react-router-dom'
 import { api } from '../services/api'
 
 /* ─────────────────────────────────────────────────────
@@ -198,7 +199,7 @@ export default function DashboardPage() {
         <div className="console-panel">
           <div className="console-panel-header">
             <h2 className="console-panel-title">TOP_ROUTES</h2>
-            <a href="#" className="console-panel-link">VIEW_ALL →</a>
+            <Link to="/dashboard/routes" className="console-panel-link">VIEW_ALL →</Link>
           </div>
           <table className="routes-table">
             <thead>
@@ -232,7 +233,7 @@ export default function DashboardPage() {
         <div className="console-panel">
           <div className="console-panel-header">
             <h2 className="console-panel-title">ANOMALY_FEED</h2>
-            <a href="#" className="console-panel-link">OPEN_CENTER →</a>
+            <Link to="/dashboard/action-center" className="console-panel-link">OPEN_CENTER →</Link>
           </div>
           <div className="anomaly-list">
             {data.anomalies.length > 0 ? data.anomalies.map((a, i) => (

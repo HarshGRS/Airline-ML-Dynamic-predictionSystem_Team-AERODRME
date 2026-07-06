@@ -1,14 +1,38 @@
 import { GoogleLogin } from '@react-oauth/google'
 import { Navigate } from 'react-router-dom'
+import { useState } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { Plane, TrendingUp, Bell, Shield } from 'lucide-react'
 
 export default function LoginPage() {
-  const { user, login } = useAuth()
+  const { user, loginWithGoogle, login, signup } = useAuth()
+
+  const [isSignUp, setIsSignUp] = useState(false)
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [error, setError] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
 
   // If already signed in, redirect to dashboard
   if (user) {
     return <Navigate to="/dashboard" replace />
+  }
+
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    setError('')
+    setIsLoading(true)
+    try {
+      if (isSignUp) {
+        await signup(email, password)
+      } else {
+        await login(email, password)
+      }
+    } catch (err) {
+      setError(err.message || 'Authentication failed. Please try again.')
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -46,7 +70,7 @@ export default function LoginPage() {
             </li>
             <li>
               <span className="login-feature-icon"><Shield size={16} /></span>
-              Secure Google sign-in
+              Secure sign-in
             </li>
           </ul>
         </div>
@@ -56,24 +80,84 @@ export default function LoginPage() {
           <div className="login-form-content">
             <h1 className="login-title">Welcome aboard</h1>
             <p className="login-subtitle">
-              Sign in with your Google account to access your dashboard, saved flights, and personalized insights.
+              Sign in to access your dashboard, saved flights, and personalized insights.
             </p>
+
+            {error && (
+              <div className="login-error" style={{ color: '#ef4444', marginBottom: '1rem', padding: '0.75rem', backgroundColor: '#fee2e2', borderRadius: '8px', fontSize: '0.875rem' }}>
+                {error}
+              </div>
+            )}
+
+            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginBottom: '1.25rem', width: '320px' }}>
+              <input
+                type="email"
+                placeholder="Email address"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                style={{ padding: '0.65rem 1rem', borderRadius: '8px', border: '1px solid var(--border)', background: 'rgba(255,255,255,0.03)', color: 'var(--text-white)', outline: 'none' }}
+              />
+              <input
+                type="password"
+                placeholder="Password"
+                required
+                minLength={8}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                style={{ padding: '0.65rem 1rem', borderRadius: '8px', border: '1px solid var(--border)', background: 'rgba(255,255,255,0.03)', color: 'var(--text-white)', outline: 'none' }}
+              />
+              <button 
+                type="submit" 
+                disabled={isLoading}
+                className="login-submit-btn"
+              >
+                {isLoading ? 'Please wait...' : (isSignUp ? 'Create account' : 'Sign in')}
+              </button>
+            </form>
+
+            <div style={{ display: 'flex', alignItems: 'center', width: '320px', gap: '1rem', marginBottom: '1.25rem' }}>
+              <div style={{ flex: 1, height: '1px', backgroundColor: 'var(--border)' }}></div>
+              <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>or</span>
+              <div style={{ flex: 1, height: '1px', backgroundColor: 'var(--border)' }}></div>
+            </div>
 
             <div className="login-google-wrapper">
               <GoogleLogin
-                onSuccess={login}
+                onSuccess={async (res) => {
+                  setError('')
+                  setIsLoading(true)
+                  try {
+                    await loginWithGoogle(res)
+                  } catch (err) {
+                    setError(err.message || 'Google Login failed. Please try again.')
+                  } finally {
+                    setIsLoading(false)
+                  }
+                }}
                 onError={() => {
-                  console.error('Google Login Failed')
+                  setError('Google Login Failed')
                 }}
                 theme="filled_black"
                 size="large"
                 shape="pill"
-                text="signin_with"
+                text="continue_with"
                 width="320"
               />
             </div>
 
-            <p className="login-terms">
+            <div style={{ marginTop: '1.25rem', fontSize: '0.85rem', textAlign: 'center', width: '320px', color: 'var(--text-soft)' }}>
+              {isSignUp ? 'Already have an account? ' : "Don't have an account? "}
+              <button
+                type="button"
+                onClick={() => setIsSignUp(!isSignUp)}
+                className="login-link-btn"
+              >
+                {isSignUp ? 'Sign in' : 'Sign up'}
+              </button>
+            </div>
+
+            <p className="login-terms" style={{ marginTop: '1.5rem' }}>
               By signing in, you agree to our <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>.
             </p>
           </div>

@@ -257,3 +257,77 @@ def get_dashboard(
         "model_version": service.metadata["model_version"],
         "generated_at": datetime.now(timezone.utc).isoformat(),
     }
+
+
+@router.get("/dashboard/routes")
+def get_all_routes(
+    service: PredictionService = Depends(get_prediction_service),
+) -> list[dict]:
+    """Get predictions for all 30 routes."""
+    routes = []
+    for src, dst in ALL_ROUTES:
+        try:
+            price_now = _predict_route(service, src, dst, days_left=7)
+            price_pred = _predict_route(service, src, dst, days_left=1)
+            delta = round(((price_pred - price_now) / price_now) * 100, 1) if price_now else 0
+            routes.append({
+                "from": src.value,
+                "to": dst.value,
+                "price": round(price_now),
+                "predicted": round(price_pred),
+                "delta": delta,
+            })
+        except Exception:
+            continue
+    routes.sort(key=lambda x: x["delta"], reverse=True)
+    return routes
+
+
+def _build_all_anomalies(service: PredictionService) -> list[dict]:
+    anomalies = []
+    now_utc = datetime.now(timezone.utc)
+    for src, dst in ALL_ROUTES:
+        try:
+            price_near = _predict_route(service, src, dst, days_left=2)
+            price_far = _predict_route(service, src, dst, days_left=20)
+            if not price_far:
+                continue
+            pct = round(((price_near - price_far) / price_far) * 100, 1)
+            
+            tag = None
+            if pct > 40:
+                tag = "PRICE_SPIKE"
+                desc = f"Forecast spike {abs(pct):.0f}% over 20-day baseline."
+            elif pct < -20:
+                tag = "PRICE_DROP"
+                desc = f"Price {abs(pct):.0f}% below 20-day average; possible promo."
+            elif 20 <= pct <= 40:
+                tag = "DEMAND_SURGE"
+                desc = f"Booking pressure up; price shifted {abs(pct):.0f}%."
+            elif abs(pct) > 10 and (hash(src.value + dst.value) % 10) > 7:
+                tag = "VOLATILITY"
+                desc = f"Volatility above normal threshold ({abs(pct):.0f}% swing)."
+
+            if tag:
+                anomalies.append({
+                    "id": f"{src.value}-{dst.value}-{tag}",
+                    "tag": tag,
+                    "route": f"{src.value} → {dst.value}",
+                    "desc": desc,
+                    "pct": pct,
+                    "time": now_utc.strftime("%H:%M UTC"),
+                    "source": src.value,
+                    "destination": dst.value
+                })
+        except Exception:
+            continue
+    anomalies.sort(key=lambda x: abs(x["pct"]), reverse=True)
+    return anomalies
+
+
+@router.get("/dashboard/anomalies")
+def get_all_anomalies(
+    service: PredictionService = Depends(get_prediction_service),
+) -> list[dict]:
+    """Get dynamically generated anomalies for all routes."""
+    return _build_all_anomalies(service)

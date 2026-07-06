@@ -1,72 +1,85 @@
-import { createContext, useContext, useState, useCallback, useMemo } from 'react'
+import { createContext, useContext, useState, useCallback, useMemo, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { googleLogout } from '@react-oauth/google'
+import { api } from '../services/api'
 
 const AuthContext = createContext(null)
 
-/**
- * Decode a Google JWT credential (ID token) to extract user info.
- * This is a simple base64 decode — no cryptographic verification on the client.
- * For production, verify the token on the backend.
- */
-function decodeJwt(token) {
-  try {
-    const base64Url = token.split('.')[1]
-    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/')
-    const jsonPayload = decodeURIComponent(
-      atob(base64)
-        .split('')
-        .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
-        .join('')
-    )
-    return JSON.parse(jsonPayload)
-  } catch {
-    return null
-  }
-}
-
-const STORAGE_KEY = 'aerodrome_auth_user'
+const STORAGE_KEY_USER = 'aerodrome_auth_user'
+const STORAGE_KEY_TOKEN = 'aerodrome_auth_token'
 
 export function AuthProvider({ children }) {
   const navigate = useNavigate()
 
   const [user, setUser] = useState(() => {
     try {
-      const stored = localStorage.getItem(STORAGE_KEY)
+      const stored = localStorage.getItem(STORAGE_KEY_USER)
       return stored ? JSON.parse(stored) : null
     } catch {
       return null
     }
   })
 
-  const login = useCallback(
-    (credentialResponse) => {
-      const decoded = decodeJwt(credentialResponse.credential)
-      if (!decoded) return
+  useEffect(() => {
+    const token = localStorage.getItem(STORAGE_KEY_TOKEN)
+    if (token) {
+      api.auth.getMe().then(userData => {
+        const enhancedUser = {
+          ...userData,
+          givenName: userData.email.split('@')[0],
+          picture: `https://ui-avatars.com/api/?name=${userData.email}&background=random`
+        }
+        setUser(enhancedUser)
+        localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(enhancedUser))
+      }).catch(err => {
+        console.error('Failed to restore session:', err)
+        logout()
+      })
+    }
+  }, [])
 
-      const userData = {
-        name: decoded.name,
-        email: decoded.email,
-        picture: decoded.picture,
-        givenName: decoded.given_name,
-        familyName: decoded.family_name,
-      }
+  const handleAuthSuccess = async (tokenData) => {
+    localStorage.setItem(STORAGE_KEY_TOKEN, tokenData.access_token)
+    const userData = await api.auth.getMe()
+    const enhancedUser = {
+      ...userData,
+      givenName: userData.email.split('@')[0],
+      picture: `https://ui-avatars.com/api/?name=${userData.email}&background=random`
+    }
+    setUser(enhancedUser)
+    localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(enhancedUser))
+    navigate('/dashboard')
+  }
 
-      setUser(userData)
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(userData))
-      navigate('/dashboard')
-    },
-    [navigate]
-  )
+  const loginWithGoogle = useCallback(async (credentialResponse) => {
+    try {
+      const tokenData = await api.auth.googleLogin({ credential: credentialResponse.credential })
+      await handleAuthSuccess(tokenData)
+    } catch (err) {
+      console.error('Google login failed:', err)
+      throw err
+    }
+  }, [navigate])
+
+  const login = useCallback(async (email, password) => {
+    const tokenData = await api.auth.login({ email, password })
+    await handleAuthSuccess(tokenData)
+  }, [navigate])
+
+  const signup = useCallback(async (email, password) => {
+    const tokenData = await api.auth.signup({ email, password })
+    await handleAuthSuccess(tokenData)
+  }, [navigate])
 
   const logout = useCallback(() => {
     googleLogout()
     setUser(null)
-    localStorage.removeItem(STORAGE_KEY)
+    localStorage.removeItem(STORAGE_KEY_USER)
+    localStorage.removeItem(STORAGE_KEY_TOKEN)
     navigate('/')
   }, [navigate])
 
-  const value = useMemo(() => ({ user, login, logout }), [user, login, logout])
+  const value = useMemo(() => ({ user, login, signup, loginWithGoogle, logout }), [user, login, signup, loginWithGoogle, logout])
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }
