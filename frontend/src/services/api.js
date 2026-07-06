@@ -42,6 +42,14 @@ export const api = {
   getModelInfo: () => fetchApi('/model/info'),
   getDashboard: () => fetchApi('/dashboard'),
 
+  // Auth
+  auth: {
+    login: (payload) => fetchApi('/auth/login', { method: 'POST', body: JSON.stringify(payload) }),
+    signup: (payload) => fetchApi('/auth/signup', { method: 'POST', body: JSON.stringify(payload) }),
+    googleLogin: (payload) => fetchApi('/auth/google', { method: 'POST', body: JSON.stringify(payload) }),
+    getMe: () => fetchApi('/auth/me'),
+  },
+
   // Prediction
   predict: (payload) =>
     fetchApi('/predict', {
@@ -64,11 +72,7 @@ export const api = {
   deleteWatchlist: (id) =>
     fetchApi(`/watchlists/${id}`, { method: 'DELETE' }).catch(() => null),
 
-  // Alerts
-  getAlerts: () => fetchApi('/alerts'),
-
-  // Admin
-  getAdmin: () => fetchApi('/admin'),
-  triggerRetrain: () => fetchApi('/admin/retrain', { method: 'POST' }),
-  runCronJob: (jobName) => fetchApi(`/admin/cron/${jobName}/run`, { method: 'POST' }),
+  // Dashboard additions
+  getDashboardRoutes: () => fetchApi('/dashboard/routes'),
+  getDashboardAnomalies: () => fetchApi('/dashboard/anomalies'),
 }

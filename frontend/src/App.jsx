@@ -8,11 +8,12 @@ import MapPage from './pages/MapPage.jsx'
 import ResultsPage from './pages/ResultsPage.jsx'
 import DashboardPage from './pages/DashboardPage.jsx'
 import WatchlistPage from './pages/WatchlistPage.jsx'
+import RoutesPage from './pages/RoutesPage.jsx'
+import ActionCenterPage from './pages/ActionCenterPage.jsx'
 import PredictPage from './pages/PredictPage.jsx'
 import CalendarPage from './pages/CalendarPage.jsx'
-import AlertsPage from './pages/AlertsPage.jsx'
-import AdminPage from './pages/AdminPage.jsx'
 import LoginPage from './pages/LoginPage.jsx'
+import MeetTheDevsPage from './pages/MeetTheDevsPage.jsx'
 import NotFoundPage from './pages/NotFoundPage.jsx'
 import ProtectedRoute from './components/ProtectedRoute.jsx'
 import DashboardLayout from './components/DashboardLayout.jsx'
@@ -61,9 +62,9 @@ export default function App() {
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/dashboard/predict" element={<PredictPage />} />
             <Route path="/dashboard/calendar" element={<CalendarPage />} />
+            <Route path="/dashboard/routes" element={<RoutesPage />} />
+            <Route path="/dashboard/action-center" element={<ActionCenterPage />} />
             <Route path="/dashboard/watchlist" element={<WatchlistPage watchlist={watchlist} onRemove={removeFromWatchlist} />} />
-            <Route path="/dashboard/alerts" element={<AlertsPage />} />
-            <Route path="/dashboard/admin" element={<AdminPage />} />
             {/* Future sub-pages: etc. */}
             <Route path="/dashboard/*" element={<DashboardPage />} />
           </Routes>
@@ -141,6 +142,7 @@ export default function App() {
         <Route path="/" element={<HomePage />} />
         <Route path="/map" element={<MapPage />} />
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/devs" element={<MeetTheDevsPage />} />
         <Route
           path="/results"
           element={
@@ -168,7 +170,7 @@ export default function App() {
         <div className="footer-columns">
           {Object.entries({
             product: ['Search flights', 'Price trends', 'Booking guidance', 'Saved trips'],
-            company: ['About us', 'Careers', 'Privacy', 'Terms'],
+            company: ['Meet the Devs', 'Careers', 'Privacy', 'Terms'],
             support: ['Help center', 'Contact support', 'Travel advice', 'Accessibility'],
           }).map(([heading, links]) => (
             <div key={heading} className="footer-column">
@@ -176,7 +178,11 @@ export default function App() {
               <ul>
                 {links.map((link) => (
                   <li key={link}>
-                    <a href="/#search">{link}</a>
+                    {link === 'Meet the Devs' ? (
+                      <NavLink to="/devs" style={{ color: 'var(--text-soft)', textDecoration: 'none' }}>{link}</NavLink>
+                    ) : (
+                      <a href="/#search">{link}</a>
+                    )}
                   </li>
                 ))}
               </ul>
