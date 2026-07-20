@@ -2,7 +2,8 @@
  * Frontend API client
  */
 
-const API_BASE = '/api/v1'
+// Use the environment variable if provided (for production), otherwise fallback to the relative path (for local dev proxy)
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '/api/v1'
 
 class ApiError extends Error {
   constructor(message, status) {

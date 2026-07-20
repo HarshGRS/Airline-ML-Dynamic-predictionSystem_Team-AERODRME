@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { api } from '../services/api'
-import { Link } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 
 const mapTagClass = (tag) => {
   if (tag === 'PRICE_SPIKE') return 'spike'
@@ -14,6 +14,7 @@ export default function ActionCenterPage() {
   const [anomalies, setAnomalies] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const navigate = useNavigate()
 
   useEffect(() => {
     document.title = 'Action Center — AERODROME Console'
@@ -54,8 +55,14 @@ export default function ActionCenterPage() {
                 <span className="anomaly-time" style={{ color: 'var(--text-muted)', fontSize: '0.8rem', marginTop: '0.25rem', display: 'block' }}>{a.time}</span>
               </div>
               <div style={{ marginLeft: '2.5rem' }}>
-                <Link 
-                  to={`/dashboard/predict?source_city=${a.source}&destination_city=${a.destination}`}
+                <button
+                  onClick={() => navigate('/dashboard/predict', {
+                    state: {
+                      source_city: a.source,
+                      destination_city: a.destination,
+                      from_action_center: true,
+                    }
+                  })}
                   style={{
                     padding: '0.5rem 1rem',
                     background: 'rgba(109, 94, 245, 0.1)',
@@ -65,13 +72,15 @@ export default function ActionCenterPage() {
                     fontSize: '0.85rem',
                     fontWeight: 600,
                     border: '1px solid rgba(109, 94, 245, 0.3)',
-                    transition: 'all 0.2s ease'
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease',
+                    fontFamily: "'Space Grotesk', sans-serif",
                   }}
                   onMouseOver={(e) => { e.currentTarget.style.background = 'rgba(109, 94, 245, 0.2)'; e.currentTarget.style.borderColor = 'rgba(109, 94, 245, 0.6)' }}
                   onMouseOut={(e) => { e.currentTarget.style.background = 'rgba(109, 94, 245, 0.1)'; e.currentTarget.style.borderColor = 'rgba(109, 94, 245, 0.3)' }}
                 >
                   INVESTIGATE →
-                </Link>
+                </button>
               </div>
             </div>
           )) : (

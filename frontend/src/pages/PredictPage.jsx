@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useLocation } from 'react-router-dom'
 import {
   Area,
   AreaChart,
@@ -145,12 +146,21 @@ function StatCard({ label, value }) {
    MAIN PAGE
 ══════════════════════════════════════════════════════ */
 export default function PredictPage() {
-  const [sourceCity,  setSourceCity]  = useState('Delhi')
-  const [destCity,    setDestCity]    = useState('Mumbai')
-  const [departDate,  setDepartDate]  = useState(todayPlusDays(14))
-  const [cabin,       setCabin]       = useState('Economy')
-  const [airline,     setAirline]     = useState('Indigo')
-  const [stops,       setStops]       = useState('zero')
+  const location = useLocation()
+  const prefill = location.state || {}
+
+  // Helper: validate against allowed enums, fallback to default
+  const validCity    = (v) => ['Bangalore','Chennai','Delhi','Hyderabad','Kolkata','Mumbai'].includes(v) ? v : null
+  const validAirline = (v) => ['AirAsia','Air_India','GO_FIRST','Indigo','SpiceJet','Vistara'].includes(v) ? v : null
+  const validStops   = (v) => ['zero','one','two_or_more'].includes(v) ? v : null
+  const validCabin   = (v) => ['Economy','Business'].includes(v) ? v : null
+
+  const [sourceCity,  setSourceCity]  = useState(validCity(prefill.source_city)      || 'Delhi')
+  const [destCity,    setDestCity]    = useState(validCity(prefill.destination_city)  || 'Mumbai')
+  const [departDate,  setDepartDate]  = useState(prefill.depart_date || todayPlusDays(14))
+  const [cabin,       setCabin]       = useState(validCabin(prefill.cabin)            || 'Economy')
+  const [airline,     setAirline]     = useState(validAirline(prefill.airline)        || 'Indigo')
+  const [stops,       setStops]       = useState(validStops(prefill.stops)            || 'zero')
   const [departTime,  setDepartTime]  = useState('Morning')
   const [arrivalTime, setArrivalTime] = useState('Afternoon')
 
@@ -159,16 +169,52 @@ export default function PredictPage() {
   const [loading,   setLoading]   = useState(false)
   const [error,     setError]     = useState(null)
   const [latencyMs, setLatencyMs] = useState(null)
+  const [watchlistMsg, setWatchlistMsg] = useState(null) // 'saved' | 'duplicate' | null
+  const [wlHovered, setWlHovered] = useState(false)
 
   useEffect(() => {
     document.title = 'Predict — AERODROME Console'
     api.getModelInfo().then(setModelInfo).catch(() => {})
   }, [])
 
+  // Auto-run prediction when arriving from Action Center
+  useEffect(() => {
+    if (prefill.from_action_center && prefill.source_city && prefill.destination_city) {
+      handlePredictAuto(prefill.source_city, prefill.destination_city)
+    }
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
+  async function handlePredictAuto(src, dst) {
+    setError(null)
+    setLoading(true)
+    const payload = {
+      airline: 'Indigo',
+      source_city: src,
+      destination_city: dst,
+      departure_time: 'Morning',
+      arrival_time: 'Afternoon',
+      stops: 'zero',
+      class: 'Economy',
+      duration: getDuration(src, dst),
+      days_left: 14,
+    }
+    const t0 = performance.now()
+    try {
+      const res = await api.predict(payload)
+      setLatencyMs(Math.round(performance.now() - t0))
+      setResult(res)
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setLoading(false)
+    }
+  }
+
   async function handlePredict(e) {
     e.preventDefault()
     if (sourceCity === destCity) { setError('Source and destination must differ.'); return }
     setError(null)
+    setWatchlistMsg(null)
     setLoading(true)
     const payload = {
       airline,
@@ -197,6 +243,36 @@ export default function PredictPage() {
   const trainedDate   = modelInfo?.trained_at ? modelInfo.trained_at.slice(0, 10) : '—'
   const featureCount  = modelInfo?.feature_importance
     ? Object.keys(modelInfo.feature_importance).length : '—'
+
+  function handleSaveToWatchlist() {
+    const entry = {
+      from: sourceCity,
+      to: destCity,
+      airline: airline.replace(/_/g, ' '),
+      departDate,
+      travelClass: cabin,
+      stops,
+      predictedPrice: result.predicted_price,
+      id: Date.now(),
+      addedAt: new Date().toISOString(),
+    }
+    try {
+      const existing = JSON.parse(localStorage.getItem('aerodrome_watchlist') || '[]')
+      const isDupe = existing.some(
+        (f) => f.from === entry.from && f.to === entry.to &&
+               f.airline === entry.airline && f.departDate === entry.departDate
+      )
+      if (isDupe) {
+        setWatchlistMsg('duplicate')
+      } else {
+        localStorage.setItem('aerodrome_watchlist', JSON.stringify([entry, ...existing]))
+        setWatchlistMsg('saved')
+      }
+    } catch {
+      setWatchlistMsg('saved')
+    }
+    setTimeout(() => setWatchlistMsg(null), 3000)
+  }
 
   return (
     <>
@@ -299,9 +375,45 @@ export default function PredictPage() {
           {/* Error + submit on same row */}
           <div className="pred-form-footer">
             {error && <p className="pred-error">{error}</p>}
-            <button type="submit" className="pred-run-btn" disabled={loading}>
-              {loading ? 'RUNNING...' : 'RUN_PREDICTION'}
-            </button>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginLeft: 'auto' }}>
+              {result && (
+                <button
+                  type="button"
+                  onClick={handleSaveToWatchlist}
+                  onMouseEnter={() => setWlHovered(true)}
+                  onMouseLeave={() => setWlHovered(false)}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: '0.45rem',
+                    padding: '0.6rem 1.1rem',
+                    background: watchlistMsg === 'saved'
+                      ? wlHovered ? 'rgba(125,241,197,0.22)' : 'rgba(125,241,197,0.1)'
+                      : watchlistMsg === 'duplicate'
+                      ? wlHovered ? 'rgba(251,191,36,0.18)' : 'rgba(251,191,36,0.08)'
+                      : wlHovered ? 'rgba(109,94,245,0.22)' : 'transparent',
+                    border: `1px solid ${watchlistMsg === 'saved' ? 'rgba(125,241,197,0.5)' : watchlistMsg === 'duplicate' ? 'rgba(251,191,36,0.45)' : wlHovered ? 'rgba(109,94,245,0.7)' : 'rgba(109,94,245,0.4)'}`,
+                    borderRadius: '8px',
+                    color: watchlistMsg === 'saved' ? '#7df1c5' : watchlistMsg === 'duplicate' ? '#fbbf24' : '#a78bfa',
+                    fontSize: '0.8rem',
+                    fontWeight: 700,
+                    fontFamily: "'Space Grotesk', sans-serif",
+                    letterSpacing: '0.05em',
+                    cursor: 'pointer',
+                    transition: 'all 200ms',
+                    whiteSpace: 'nowrap',
+                    boxShadow: wlHovered ? '0 0 14px rgba(109,94,245,0.2)' : 'none',
+                  }}
+                >
+                  {watchlistMsg === 'saved'
+                    ? '✓ SAVED'
+                    : watchlistMsg === 'duplicate'
+                    ? '⚠ ALREADY SAVED'
+                    : '☆ SAVE TO WATCHLIST'}
+                </button>
+              )}
+              <button type="submit" className="pred-run-btn" disabled={loading}>
+                {loading ? 'RUNNING...' : 'RUN_PREDICTION'}
+              </button>
+            </div>
           </div>
         </form>
       </div>
