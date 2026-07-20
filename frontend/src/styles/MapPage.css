@@ -228,6 +228,22 @@
   cursor: not-allowed;
 }
 
+/* Locked (guest) variant — indigo ghost style */
+.map-search-btn--locked {
+  background: transparent;
+  border: 1.5px solid rgba(99, 102, 241, 0.5);
+  color: #a5b4fc;
+  letter-spacing: 0.04em;
+}
+
+.map-search-btn--locked:hover:not(:disabled) {
+  background: rgba(99, 102, 241, 0.12);
+  border-color: rgba(99, 102, 241, 0.8);
+  color: #c7d2fe;
+  box-shadow: 0 4px 18px rgba(99, 102, 241, 0.25);
+  transform: translateY(-1px);
+}
+
 .map-reset-btn {
   display: flex;
   align-items: center;

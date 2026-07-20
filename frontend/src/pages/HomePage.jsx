@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ArrowLeftRight, ArrowRight, BrainCircuit, Plane, TrendingUp } from 'lucide-react'
+import { ArrowLeftRight, ArrowRight, BrainCircuit, Lock, Plane, TrendingUp } from 'lucide-react'
+import { useAuth } from '../context/AuthContext'
 import HomeMap from '../components/HomeMap'
 
 const mlCities = ['Bangalore', 'Chennai', 'Delhi', 'Hyderabad', 'Kolkata', 'Mumbai']
@@ -35,6 +36,7 @@ const faqItems = [
 
 export default function HomePage() {
   const navigate = useNavigate()
+  const { user } = useAuth()
 
   const [tripType, setTripType] = useState('Round Trip')
   const [travelClass, setTravelClass] = useState('Economy')
@@ -86,6 +88,13 @@ export default function HomePage() {
 
   const handleSearch = (event) => {
     event.preventDefault()
+
+    // Guests must be logged in to run predictions
+    if (!user) {
+      navigate('/login', { state: { next: '/results', searchParams: { from, to, airline, tripType, travelClass, stops, departDate, returnDate, departureTime, arrivalTime, duration, daysLeft } } })
+      return
+    }
+
     navigate('/results', {
       state: {
         from,
@@ -303,7 +312,15 @@ export default function HomePage() {
                   XGBoost model · trained on Indian domestic routes · {daysLeft}d booking window
                 </span>
                 <button type="submit" className="predict-cta">
-                  SEARCH + PREDICT <ArrowRight size={14} strokeWidth={2.5} />
+                  {user ? (
+                    <>
+                      SEARCH + PREDICT <ArrowRight size={14} strokeWidth={2.5} />
+                    </>
+                  ) : (
+                    <>
+                      <Lock size={13} strokeWidth={2.5} /> SIGN IN TO PREDICT
+                    </>
+                  )}
                 </button>
               </div>
             </form>

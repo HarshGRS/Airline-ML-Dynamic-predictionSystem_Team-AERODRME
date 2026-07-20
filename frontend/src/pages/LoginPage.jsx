@@ -1,11 +1,18 @@
 import { GoogleLogin } from '@react-oauth/google'
-import { Navigate } from 'react-router-dom'
+import { Navigate, useLocation, useNavigate } from 'react-router-dom'
 import { useState } from 'react'
 import { useAuth } from '../context/AuthContext'
-import { Plane, TrendingUp, Bell, Shield } from 'lucide-react'
+import { Lock, Plane, TrendingUp, Bell, Shield } from 'lucide-react'
 
 export default function LoginPage() {
   const { user, loginWithGoogle, login, signup } = useAuth()
+  const location = useLocation()
+  const navigate = useNavigate()
+
+  // Detect redirect intent from the home page prediction guard
+  const redirectState = location.state || {}
+  const nextPath = redirectState.next || null
+  const searchParams = redirectState.searchParams || null
 
   const [isSignUp, setIsSignUp] = useState(false)
   const [email, setEmail] = useState('')
@@ -13,9 +20,20 @@ export default function LoginPage() {
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
 
-  // If already signed in, redirect to dashboard
+  // If already signed in, redirect to intended destination or dashboard
   if (user) {
+    if (nextPath && searchParams) {
+      return <Navigate to={nextPath} state={searchParams} replace />
+    }
     return <Navigate to="/dashboard" replace />
+  }
+
+  // After successful auth, go to next destination if set
+  const handlePostAuth = () => {
+    if (nextPath && searchParams) {
+      navigate(nextPath, { state: searchParams, replace: true })
+    }
+    // AuthContext.handleAuthSuccess navigates to /dashboard by default if no override
   }
 
   const handleSubmit = async (e) => {
@@ -28,6 +46,7 @@ export default function LoginPage() {
       } else {
         await login(email, password)
       }
+      handlePostAuth()
     } catch (err) {
       setError(err.message || 'Authentication failed. Please try again.')
     } finally {
@@ -83,6 +102,14 @@ export default function LoginPage() {
               Sign in to access your dashboard, saved flights, and personalized insights.
             </p>
 
+            {/* Prediction redirect banner */}
+            {nextPath && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.55rem', padding: '0.65rem 1rem', marginBottom: '0.75rem', width: '320px', borderRadius: '8px', background: 'rgba(99,102,241,0.12)', border: '1px solid rgba(99,102,241,0.35)', fontSize: '0.82rem', color: 'var(--text-soft)' }}>
+                <Lock size={13} strokeWidth={2.5} style={{ flexShrink: 0, color: '#818cf8' }} />
+                Sign in to run your flight prediction
+              </div>
+            )}
+
             {error && (
               <div className="login-error" style={{ color: '#ef4444', marginBottom: '1rem', padding: '0.75rem', backgroundColor: '#fee2e2', borderRadius: '8px', fontSize: '0.875rem' }}>
                 {error}
@@ -129,6 +156,7 @@ export default function LoginPage() {
                   setIsLoading(true)
                   try {
                     await loginWithGoogle(res)
+                    handlePostAuth()
                   } catch (err) {
                     setError(err.message || 'Google Login failed. Please try again.')
                   } finally {

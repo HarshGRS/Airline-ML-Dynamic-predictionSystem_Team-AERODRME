@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Trash2, Bookmark, Plane, TrendingUp, TrendingDown, Minus, Clock, Calendar, ArrowRight } from 'lucide-react'
+import { Trash2, Bookmark, Plane, TrendingUp, TrendingDown, Minus, Clock, Calendar, ArrowRight, TrendingUp as InvestigateIcon } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 
 /* ── city abbreviation table ──────────────────────── */
@@ -57,16 +57,46 @@ function timeAgo(isoString) {
 
 /* ── Single watchlist card ────────────────────────── */
 function WatchlistCard({ item, onDelete }) {
+  const navigate = useNavigate()
   const [removing, setRemoving] = useState(false)
+  const [hovered, setHovered] = useState(false)
 
-  function handleDelete() {
+  function handleDelete(e) {
+    e.stopPropagation() // prevent card click
     setRemoving(true)
-    // Small delay for exit animation
     setTimeout(() => onDelete(item.id), 280)
   }
 
+  function handleInvestigate() {
+    // Normalise airline: "Air India" -> "Air_India"
+    const airlineNorm = (item.airline || 'Indigo').replace(/ /g, '_')
+    // Normalise stops: "Non-stop" -> "zero", "1 stop" -> "one", else "two_or_more"
+    let stopsNorm = 'zero'
+    if (item.stops === 'one' || item.stops === 1 || String(item.stops).startsWith('1')) stopsNorm = 'one'
+    else if (item.stops === 'two_or_more' || Number(item.stops) >= 2) stopsNorm = 'two_or_more'
+    else if (item.stops === 'zero' || item.stops === 0 || item.stops === 'Non-stop' || item.stops === 'non-stop') stopsNorm = 'zero'
+
+    navigate('/dashboard/predict', {
+      state: {
+        source_city: item.from,
+        destination_city: item.to,
+        airline: airlineNorm,
+        depart_date: item.departDate,
+        cabin: item.travelClass || 'Economy',
+        stops: stopsNorm,
+        from_action_center: true, // triggers auto-run
+      }
+    })
+  }
+
   return (
-    <div className={`wl-route-card ${removing ? 'wl-card-exit' : ''}`}>
+    <div
+      className={`wl-route-card ${removing ? 'wl-card-exit' : ''}`}
+      onClick={handleInvestigate}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{ cursor: 'pointer', position: 'relative', transition: 'border-color 200ms, box-shadow 200ms' }}
+    >
       {/* Top: Route header */}
       <div className="wl-card-header">
         <div className="wl-card-route">
@@ -74,14 +104,26 @@ function WatchlistCard({ item, onDelete }) {
           <ArrowRight size={14} strokeWidth={2} className="wl-card-arrow" />
           <span className="wl-card-code">{codeOf(item.to)}</span>
         </div>
-        <button
-          type="button"
-          className="wl-card-delete"
-          onClick={handleDelete}
-          title="Remove from watchlist"
-        >
-          <Trash2 size={13} strokeWidth={2} />
-        </button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          {hovered && (
+            <span style={{
+              fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.06em',
+              color: '#a78bfa', fontFamily: "'Space Grotesk', sans-serif",
+              display: 'flex', alignItems: 'center', gap: '0.3rem',
+              opacity: hovered ? 1 : 0, transition: 'opacity 150ms',
+            }}>
+              PREDICT <ArrowRight size={11} strokeWidth={2.5} />
+            </span>
+          )}
+          <button
+            type="button"
+            className="wl-card-delete"
+            onClick={handleDelete}
+            title="Remove from watchlist"
+          >
+            <Trash2 size={13} strokeWidth={2} />
+          </button>
+        </div>
       </div>
 
       {/* Sub-route label */}
