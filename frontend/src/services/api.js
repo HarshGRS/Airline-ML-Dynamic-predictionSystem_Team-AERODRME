@@ -63,15 +63,15 @@ export const api = {
       body: JSON.stringify(payloads),
     }),
 
-  // Watchlist
-  getWatchlists: () => fetchApi('/watchlists'),
-  createWatchlist: (payload) =>
-    fetchApi('/watchlists', {
+  // Saved Searches
+  getSavedSearches: () => fetchApi('/saved-searches'),
+  createSavedSearch: (payload) =>
+    fetchApi('/saved-searches', {
       method: 'POST',
       body: JSON.stringify(payload),
     }),
-  deleteWatchlist: (id) =>
-    fetchApi(`/watchlists/${id}`, { method: 'DELETE' }).catch(() => null),
+  deleteSavedSearch: (id) =>
+    fetchApi(`/saved-searches/${id}`, { method: 'DELETE' }).catch(() => null),
 
   // Dashboard additions
   getDashboardRoutes: () => fetchApi('/dashboard/routes'),

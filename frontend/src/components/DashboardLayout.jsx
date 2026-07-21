@@ -19,7 +19,7 @@ const NAV_ITEMS = [
   { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, num: '01' },
   { to: '/dashboard/predict', label: 'Predict', icon: TrendingUp, num: '02' },
   { to: '/dashboard/calendar', label: 'Calendar', icon: Calendar, num: '03' },
-  { to: '/dashboard/watchlist', label: 'Watchlist', icon: Bookmark, num: '04' },
+  { to: '/dashboard/saved-searches', label: 'Saved Searches', icon: Bookmark, num: '04' },
 ]
 
 export default function DashboardLayout({ children }) {

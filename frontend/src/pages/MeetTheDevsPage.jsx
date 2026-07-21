@@ -16,7 +16,7 @@ const PLATFORM_FEATURES = [
   { icon: TrendingUp,   title: 'Price Trend Analysis',    color: '#22d3ee', desc: 'Track how fares evolve from 49 days out to departure day and identify the optimal booking window.' },
   { icon: Globe,        title: 'Interactive Route Map',   color: '#7df1c5', desc: 'Visualise all major Indian domestic routes on a live map and instantly get estimated fair prices.' },
   { icon: Server,       title: 'FastAPI Backend',         color: '#f59e0b', desc: 'High-performance Python backend with RESTful API, JWT auth, and real-time ML inference endpoints.' },
-  { icon: Layers,       title: 'Watchlist & Alerts',      color: '#a78bfa', desc: 'Save routes, monitor price movements, and receive trend signals to never miss a low-fare window.' },
+  { icon: Layers,       title: 'Saved Searches & Alerts', color: '#a78bfa', desc: 'Save routes, monitor price movements, and receive trend signals to never miss a low-fare window.' },
   { icon: Shield,       title: 'Secure & Scalable',       color: '#34d399', desc: 'Google OAuth + email auth, role-based access, and a modular architecture built for production scale.' },
 ]
 
