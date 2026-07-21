@@ -1,30 +1,33 @@
-import { GoogleLogin } from '@react-oauth/google'
-import { Navigate, Link } from 'react-router-dom'
 import { useState } from 'react'
-import { useAuth } from '../context/AuthContext'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { Plane, TrendingUp, Bell, Shield } from 'lucide-react'
+import { api } from '../services/api'
 
-export default function LoginPage() {
-  const { user, loginWithGoogle, login } = useAuth()
+export default function ResetPasswordPage() {
+  const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const token = searchParams.get('token') || ''
 
-  const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
-
-  // If already signed in, redirect to dashboard
-  if (user) {
-    return <Navigate to="/dashboard" replace />
-  }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
+
+    if (password !== confirmPassword) {
+      setError('Passwords do not match.')
+      return
+    }
+
     setIsLoading(true)
     try {
-      await login(email, password)
+      await api.auth.resetPassword({ token, new_password: password })
+      navigate('/login')
     } catch (err) {
-      setError(err.message || 'Authentication failed. Please try again.')
+      setError(err.message || 'This reset link is invalid or has expired.')
     } finally {
       setIsLoading(false)
     }
@@ -33,7 +36,6 @@ export default function LoginPage() {
   return (
     <section className="login-page">
       <div className="login-card">
-        {/* Left: branding panel */}
         <div className="login-branding">
           <div className="login-brand-header">
             <div className="brand-icon login-brand-icon">A</div>
@@ -70,12 +72,11 @@ export default function LoginPage() {
           </ul>
         </div>
 
-        {/* Right: sign-in form */}
         <div className="login-form-panel">
           <div className="login-form-content">
-            <h1 className="login-title">Welcome aboard</h1>
+            <h1 className="login-title">Choose a new password</h1>
             <p className="login-subtitle">
-              Sign in to access your dashboard, saved flights, and personalized insights.
+              Enter and confirm your new password below.
             </p>
 
             {error && (
@@ -84,77 +85,45 @@ export default function LoginPage() {
               </div>
             )}
 
+            {!token && (
+              <div style={{ color: '#ef4444', marginBottom: '1rem', padding: '0.75rem', backgroundColor: '#fee2e2', borderRadius: '8px', fontSize: '0.875rem' }}>
+                This reset link is missing its token. Please use the link from your email.
+              </div>
+            )}
+
             <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginBottom: '1.25rem', width: '320px' }}>
               <input
-                type="email"
-                placeholder="Email address"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                style={{ padding: '0.65rem 1rem', borderRadius: '8px', border: '1px solid var(--border)', background: 'rgba(255,255,255,0.03)', color: 'var(--text-white)', outline: 'none' }}
-              />
-              <input
                 type="password"
-                placeholder="Password"
+                placeholder="New password"
                 required
                 minLength={8}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 style={{ padding: '0.65rem 1rem', borderRadius: '8px', border: '1px solid var(--border)', background: 'rgba(255,255,255,0.03)', color: 'var(--text-white)', outline: 'none' }}
               />
+              <input
+                type="password"
+                placeholder="Confirm new password"
+                required
+                minLength={8}
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                style={{ padding: '0.65rem 1rem', borderRadius: '8px', border: '1px solid var(--border)', background: 'rgba(255,255,255,0.03)', color: 'var(--text-white)', outline: 'none' }}
+              />
               <button
                 type="submit"
-                disabled={isLoading}
+                disabled={isLoading || !token}
                 className="login-submit-btn"
               >
-                {isLoading ? 'Please wait...' : 'Sign in'}
+                {isLoading ? 'Resetting...' : 'Reset password'}
               </button>
-
-              <Link to="/forgot-password" className="login-link-btn" style={{ textAlign: 'right', fontSize: '0.85rem' }}>
-                Forgot password?
-              </Link>
             </form>
 
-            <div style={{ display: 'flex', alignItems: 'center', width: '320px', gap: '1rem', marginBottom: '1.25rem' }}>
-              <div style={{ flex: 1, height: '1px', backgroundColor: 'var(--border)' }}></div>
-              <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>or</span>
-              <div style={{ flex: 1, height: '1px', backgroundColor: 'var(--border)' }}></div>
-            </div>
-
-            <div className="login-google-wrapper">
-              <GoogleLogin
-                onSuccess={async (res) => {
-                  setError('')
-                  setIsLoading(true)
-                  try {
-                    await loginWithGoogle(res)
-                  } catch (err) {
-                    setError(err.message || 'Google Login failed. Please try again.')
-                  } finally {
-                    setIsLoading(false)
-                  }
-                }}
-                onError={() => {
-                  setError('Google Login Failed')
-                }}
-                theme="filled_black"
-                size="large"
-                shape="pill"
-                text="continue_with"
-                width="320"
-              />
-            </div>
-
-            <div style={{ marginTop: '1.25rem', fontSize: '0.85rem', textAlign: 'center', width: '320px', color: 'var(--text-soft)' }}>
-              {"Don't have an account? "}
-              <Link to="/register" className="login-link-btn">
-                Sign up
+            <div style={{ marginTop: '0.5rem', fontSize: '0.85rem', textAlign: 'center', width: '320px', color: 'var(--text-soft)' }}>
+              <Link to="/login" className="login-link-btn">
+                Back to sign in
               </Link>
             </div>
-
-            <p className="login-terms" style={{ marginTop: '1.5rem' }}>
-              By signing in, you agree to our <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>.
-            </p>
           </div>
         </div>
       </div>

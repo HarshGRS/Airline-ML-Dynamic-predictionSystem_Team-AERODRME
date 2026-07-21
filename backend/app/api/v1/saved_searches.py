@@ -33,6 +33,11 @@ def create_saved_search(
         source_city=payload.source_city.value,
         destination_city=payload.destination_city.value,
         flight_class=payload.flight_class.value,
+        airline=payload.airline.value,
+        departure_time=payload.departure_time.value,
+        arrival_time=payload.arrival_time.value,
+        stops=payload.stops.value,
+        departure_date=payload.departure_date,
     )
     db.add(saved_search)
     db.commit()

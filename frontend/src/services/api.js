@@ -2,8 +2,7 @@
  * Frontend API client
  */
 
-// Use the environment variable if provided (for production), otherwise fallback to the relative path (for local dev proxy)
-const API_BASE = import.meta.env.VITE_API_BASE_URL || '/api/v1'
+const API_BASE = '/api/v1'
 
 class ApiError extends Error {
   constructor(message, status) {
@@ -49,6 +48,8 @@ export const api = {
     signup: (payload) => fetchApi('/auth/signup', { method: 'POST', body: JSON.stringify(payload) }),
     googleLogin: (payload) => fetchApi('/auth/google', { method: 'POST', body: JSON.stringify(payload) }),
     getMe: () => fetchApi('/auth/me'),
+    forgotPassword: (payload) => fetchApi('/auth/forgot-password', { method: 'POST', body: JSON.stringify(payload) }),
+    resetPassword: (payload) => fetchApi('/auth/reset-password', { method: 'POST', body: JSON.stringify(payload) }),
   },
 
   // Prediction
@@ -63,7 +64,17 @@ export const api = {
       body: JSON.stringify(payloads),
     }),
 
-  // Saved Searches
+  // Watchlist
+  getWatchlists: () => fetchApi('/watchlists'),
+  createWatchlist: (payload) =>
+    fetchApi('/watchlists', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    }),
+  deleteWatchlist: (id) =>
+    fetchApi(`/watchlists/${id}`, { method: 'DELETE' }).catch(() => null),
+
+  // Saved searches (Predict-page queries, re-runnable without re-entering fields)
   getSavedSearches: () => fetchApi('/saved-searches'),
   createSavedSearch: (payload) =>
     fetchApi('/saved-searches', {

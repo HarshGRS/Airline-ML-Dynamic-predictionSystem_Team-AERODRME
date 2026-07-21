@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
-import { Trash2, Bookmark, Plane, Clock, ArrowRight } from 'lucide-react'
+import { Trash2, Bookmark, Plane, Calendar, ArrowRight, Play } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
+import { api } from '../services/api'
 
 /* ── city abbreviation table ──────────────────────── */
 const CITY_CODE = {
@@ -29,170 +30,150 @@ function labelOf(city) {
   return CITY_LABEL[city] ?? city
 }
 
-/* ── Relative time helper ─────────────────────────── */
-function timeAgo(isoString) {
-  if (!isoString) return ''
-  const ms = Date.now() - new Date(isoString).getTime()
-  const mins = Math.floor(ms / 60000)
-  if (mins < 1) return 'Just now'
-  if (mins < 60) return `${mins}m ago`
-  const hrs = Math.floor(mins / 60)
-  if (hrs < 24) return `${hrs}h ago`
-  const days = Math.floor(hrs / 24)
-  return `${days}d ago`
-}
-
 /* ── Single saved search card ─────────────────────── */
-function SavedSearchCard({ item, onDelete }) {
-  const navigate = useNavigate()
+function SavedSearchCard({ item, onUse, onDelete }) {
   const [removing, setRemoving] = useState(false)
-  const [hovered, setHovered] = useState(false)
 
-  function handleDelete(e) {
-    e.stopPropagation() // prevent card click
+  function handleDelete() {
     setRemoving(true)
     setTimeout(() => onDelete(item.id), 280)
   }
 
-  function handleInvestigate() {
-    navigate('/dashboard/predict', {
-      state: {
-        source_city: item.source_city,
-        destination_city: item.destination_city,
-        cabin: item.flight_class || 'Economy',
-        // Intentionally not setting depart_date so the user can select a new one
-      }
-    })
-  }
-
   return (
-    <div
-      className={`saved-search-route-card ${removing ? 'saved-search-card-exit' : ''}`}
-      onClick={handleInvestigate}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      style={{ cursor: 'pointer', position: 'relative', transition: 'border-color 200ms, box-shadow 200ms' }}
-    >
+    <div className={`wl-route-card ${removing ? 'wl-card-exit' : ''}`}>
       {/* Top: Route header */}
-      <div className="saved-search-card-header">
-        <div className="saved-search-card-route">
-          <span className="saved-search-card-code">{codeOf(item.source_city)}</span>
-          <ArrowRight size={14} strokeWidth={2} className="saved-search-card-arrow" />
-          <span className="saved-search-card-code">{codeOf(item.destination_city)}</span>
+      <div className="wl-card-header">
+        <div className="wl-card-route">
+          <span className="wl-card-code">{codeOf(item.source_city)}</span>
+          <ArrowRight size={14} strokeWidth={2} className="wl-card-arrow" />
+          <span className="wl-card-code">{codeOf(item.destination_city)}</span>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          {hovered && (
-            <span style={{
-              fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.06em',
-              color: '#a78bfa', fontFamily: "'Space Grotesk', sans-serif",
-              display: 'flex', alignItems: 'center', gap: '0.3rem',
-              opacity: hovered ? 1 : 0, transition: 'opacity 150ms',
-            }}>
-              SEARCH <ArrowRight size={11} strokeWidth={2.5} />
-            </span>
-          )}
-          <button
-            type="button"
-            className="saved-search-card-delete"
-            onClick={handleDelete}
-            title="Remove from saved searches"
-          >
-            <Trash2 size={13} strokeWidth={2} />
-          </button>
-        </div>
+        <button
+          type="button"
+          className="wl-card-delete"
+          onClick={handleDelete}
+          title="Delete saved search"
+        >
+          <Trash2 size={13} strokeWidth={2} />
+        </button>
       </div>
 
       {/* Sub-route label */}
-      <div className="saved-search-card-sub-route">
+      <div className="wl-card-sub-route">
         {labelOf(item.source_city)} to {labelOf(item.destination_city)}
       </div>
 
       {/* Info grid */}
-      <div className="saved-search-card-info-grid">
-        {item.flight_class && (
-          <div className="saved-search-card-info">
-            <span className="saved-search-card-class-dot" />
-            <span>{item.flight_class}</span>
-          </div>
-        )}
+      <div className="wl-card-info-grid">
+        <div className="wl-card-info">
+          <Plane size={12} strokeWidth={2} />
+          <span>{item.airline.replace(/_/g, ' ')}</span>
+        </div>
+        <div className="wl-card-info">
+          <Calendar size={12} strokeWidth={2} />
+          <span>{item.departure_date}</span>
+        </div>
+        <div className="wl-card-info">
+          <span className="wl-card-class-dot" />
+          <span>{item.flight_class}</span>
+        </div>
+        <div className="wl-card-info">
+          <span className="wl-card-class-dot" />
+          <span>{item.stops === 'zero' ? 'Non-stop' : item.stops === 'one' ? '1 stop' : '2+ stops'}</span>
+        </div>
       </div>
 
-      {/* Bottom row */}
-      <div className="saved-search-card-bottom">
-        {item.created_at && (
-          <span className="saved-search-card-time">
-            <Clock size={11} strokeWidth={2} />
-            {timeAgo(item.created_at)}
-          </span>
-        )}
+      {/* Bottom row: Use this search */}
+      <div className="wl-card-bottom">
+        <button
+          type="button"
+          className="wl-empty-cta"
+          onClick={() => onUse(item)}
+        >
+          <Play size={13} strokeWidth={2.5} />
+          USE_THIS_SEARCH
+        </button>
       </div>
     </div>
   )
 }
 
 /* ── Main Page ─────────────────────────────────────── */
-export default function SavedSearchesPage({ savedSearches = [], onRemove }) {
+export default function SavedSearchesPage() {
   const navigate = useNavigate()
+  const [savedSearches, setSavedSearches] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
 
   useEffect(() => {
-    document.title = 'Saved Searches — AERODROME Console'
+    document.title = 'Saved Search — AERODROME Console'
+    api.getSavedSearches()
+      .then(setSavedSearches)
+      .catch((err) => setError(err.message))
+      .finally(() => setLoading(false))
   }, [])
 
-  // Compute summary stats
-  const totalRoutes = savedSearches.length
-  const uniqueRoutes = new Set(savedSearches.map((w) => `${w.source_city}-${w.destination_city}`)).size
+  async function handleDelete(id) {
+    setSavedSearches((prev) => prev.filter((s) => s.id !== id))
+    await api.deleteSavedSearch(id)
+  }
+
+  function handleUse(item) {
+    // Hand the saved fields to the Predict page via router state — it
+    // pre-fills the form so the user just hits RUN_PREDICTION.
+    navigate('/dashboard/predict', { state: { savedSearch: item } })
+  }
+
+  const totalSaved = savedSearches.length
 
   return (
     <>
       {/* Page header */}
       <div className="console-page-header">
-        <h1>Saved Searches</h1>
-        <p>Your saved flight routes — quickly re-run predictions for your favorite routes.</p>
+        <h1>Save Search</h1>
+        <p>Your saved prediction queries — reuse one to skip re-entering the form.</p>
       </div>
 
-      {/* Summary strip */}
-      <div className="saved-search-summary-strip">
-        <div className="saved-search-summary-stat">
-          <span className="saved-search-stat-value">{totalRoutes}</span>
-          <span className="saved-search-stat-label">SAVED</span>
-        </div>
-        <div className="saved-search-summary-stat">
-          <span className="saved-search-stat-value">{uniqueRoutes}</span>
-          <span className="saved-search-stat-label">ROUTES</span>
-        </div>
-      </div>
-
-      {/* Saved Search items */}
-      <div className="console-panel saved-search-items-panel">
+      {/* Saved search items */}
+      <div className="console-panel wl-items-panel">
         <div className="console-panel-header">
-          <h2 className="console-panel-title">SAVED_ROUTES</h2>
-          {totalRoutes > 0 && (
-            <span className="saved-search-total-badge">{totalRoutes} TOTAL</span>
+          <h2 className="console-panel-title">SAVED_SEARCHES</h2>
+          {totalSaved > 0 && (
+            <span className="wl-total-badge">{totalSaved} TOTAL</span>
           )}
         </div>
 
-        <div className="saved-search-items-body">
-          {totalRoutes === 0 ? (
-            <div className="saved-search-empty">
+        <div className="wl-items-body">
+          {loading ? (
+            <div className="wl-empty">
+              <p>Loading saved searches...</p>
+            </div>
+          ) : error ? (
+            <div className="wl-empty">
+              <p>{error}</p>
+            </div>
+          ) : totalSaved === 0 ? (
+            <div className="wl-empty">
               <Bookmark size={36} strokeWidth={1.5} style={{ opacity: 0.3 }} />
-              <p>No saved routes yet.</p>
-              <p>Search for a flight and save it to quickly access it later.</p>
+              <p>No saved searches yet.</p>
+              <p>Run a prediction and save it to reuse the same query later.</p>
               <button
                 type="button"
-                className="saved-search-empty-cta"
+                className="wl-empty-cta"
                 onClick={() => navigate('/dashboard/predict')}
               >
                 <Plane size={14} strokeWidth={2.5} />
-                SEARCH_FLIGHTS
+                GO_TO_PREDICT
               </button>
             </div>
           ) : (
-            <div className="saved-search-cards-grid">
+            <div className="wl-cards-grid">
               {savedSearches.map((item) => (
                 <SavedSearchCard
                   key={item.id}
                   item={item}
-                  onDelete={onRemove}
+                  onUse={handleUse}
+                  onDelete={handleDelete}
                 />
               ))}
             </div>

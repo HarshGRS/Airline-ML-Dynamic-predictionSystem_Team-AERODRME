@@ -15,7 +15,9 @@ from app.models import SavedSearch, User, Watchlist  # noqa: E402,F401
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
-config.set_main_option("sqlalchemy.url", DATABASE_URL)
+# configparser treats "%" as interpolation syntax, so escape any literal
+# "%" (e.g. from a URL-encoded password like %40) before storing the URL.
+config.set_main_option("sqlalchemy.url", DATABASE_URL.replace("%", "%%"))
 
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.

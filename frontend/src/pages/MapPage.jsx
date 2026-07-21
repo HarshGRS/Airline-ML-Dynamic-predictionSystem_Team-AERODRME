@@ -2,9 +2,8 @@ import { useCallback, useEffect, useState, useMemo } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { MapContainer, TileLayer, Marker, Polyline, Tooltip as LeafletTooltip, useMap } from 'react-leaflet'
 import L from 'leaflet'
-import { ArrowRight, Lock, Plane, Loader2, RefreshCw } from 'lucide-react'
+import { ArrowRight, Plane, Loader2, RefreshCw } from 'lucide-react'
 import { api } from '../services/api'
-import { useAuth } from '../context/AuthContext'
 import 'leaflet/dist/leaflet.css'
 import '../styles/MapPage.css' // We'll create this next
 
@@ -54,7 +53,6 @@ function formatPrice(price) {
 export default function MapPage() {
   const navigate = useNavigate()
   const location = useLocation()
-  const { user } = useAuth()
   
   const [sourceCity, setSourceCity] = useState(location.state?.preselectFrom || null)
   const [destCity, setDestCity] = useState(location.state?.preselectTo || null)
@@ -118,29 +116,22 @@ export default function MapPage() {
 
   const handleSearchRoute = () => {
     if (!sourceCity || !destCity) return
-
-    const routeState = {
-      from: sourceCity,
-      to: destCity,
-      airline: 'Indigo',
-      tripType: 'One Way',
-      travelClass: 'Economy',
-      stops: 'Non-stop',
-      departDate: new Date(Date.now() + 14 * 86400000).toISOString().split('T')[0],
-      returnDate: new Date(Date.now() + 21 * 86400000).toISOString().split('T')[0],
-      departureTime: 'Morning',
-      arrivalTime: 'Evening',
-      duration: 2.5,
-      daysLeft: 14,
-    }
-
-    // Guests must be logged in to see the full trend analysis
-    if (!user) {
-      navigate('/login', { state: { next: '/results', searchParams: routeState } })
-      return
-    }
-
-    navigate('/results', { state: routeState })
+    navigate('/results', {
+      state: {
+        from: sourceCity,
+        to: destCity,
+        airline: 'Indigo',
+        tripType: 'One Way',
+        travelClass: 'Economy',
+        stops: 'Non-stop',
+        departDate: new Date(Date.now() + 14 * 86400000).toISOString().split('T')[0], // 14 days out
+        returnDate: new Date(Date.now() + 21 * 86400000).toISOString().split('T')[0],
+        departureTime: 'Morning',
+        arrivalTime: 'Evening',
+        duration: 2.5,
+        daysLeft: 14,
+      }
+    })
   }
 
   const routePositions = useMemo(() => {
@@ -198,15 +189,11 @@ export default function MapPage() {
             </div>
             
             <button 
-              className={`map-search-btn${!user ? ' map-search-btn--locked' : ''}`}
+              className="map-search-btn" 
               onClick={handleSearchRoute}
               disabled={loading}
             >
-              {user ? (
-                <>Analyze full trend <ArrowRight size={16} /></>
-              ) : (
-                <><Lock size={14} strokeWidth={2.5} /> Sign in to analyze trend</>
-              )}
+              Analyze full trend <ArrowRight size={16} />
             </button>
             <button 
               className="map-reset-btn" 

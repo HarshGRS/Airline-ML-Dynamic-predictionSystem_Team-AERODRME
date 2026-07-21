@@ -19,7 +19,7 @@ const NAV_ITEMS = [
   { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, num: '01' },
   { to: '/dashboard/predict', label: 'Predict', icon: TrendingUp, num: '02' },
   { to: '/dashboard/calendar', label: 'Calendar', icon: Calendar, num: '03' },
-  { to: '/dashboard/saved-searches', label: 'Saved Searches', icon: Bookmark, num: '04' },
+  { to: '/dashboard/saved-searches', label: 'Save Search', icon: Bookmark, num: '04' },
 ]
 
 export default function DashboardLayout({ children }) {
@@ -59,7 +59,7 @@ export default function DashboardLayout({ children }) {
       {/* Sidebar */}
       <aside className={`console-sidebar ${sidebarOpen ? 'open' : ''}`}>
         <Link to="/" className="console-sidebar-brand" style={{ textDecoration: 'none' }}>
-          <img src="/logo-aerodrome.png" alt="Aerodrome" className="brand-logo" style={{ width: '2.6rem', height: '2.6rem', objectFit: 'contain', borderRadius: '10px' }} />
+          <div className="brand-icon">A</div>
           <span className="console-sidebar-brand-name">AERODROME</span>
         </Link>
 

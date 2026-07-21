@@ -10,6 +10,7 @@ import {
   ResponsiveContainer,
   ReferenceLine,
 } from 'recharts'
+import { Bookmark, BookmarkCheck } from 'lucide-react'
 import { api } from '../services/api'
 
 /* ── Static enum data matching backend schemas ─────── */
@@ -146,67 +147,52 @@ function StatCard({ label, value }) {
    MAIN PAGE
 ══════════════════════════════════════════════════════ */
 export default function PredictPage() {
+  // A saved search handed over from the Saved Search page pre-fills the form
+  // below instead of the hardcoded defaults, so the user just hits Run.
   const location = useLocation()
-  const prefill = location.state || {}
+  const saved = location.state?.savedSearch
 
-  // Helper: validate against allowed enums, fallback to default
-  const validCity    = (v) => ['Bangalore','Chennai','Delhi','Hyderabad','Kolkata','Mumbai'].includes(v) ? v : null
-  const validAirline = (v) => ['AirAsia','Air_India','GO_FIRST','Indigo','SpiceJet','Vistara'].includes(v) ? v : null
-  const validStops   = (v) => ['zero','one','two_or_more'].includes(v) ? v : null
-  const validCabin   = (v) => ['Economy','Business'].includes(v) ? v : null
-
-  const [sourceCity,  setSourceCity]  = useState(validCity(prefill.source_city)      || 'Delhi')
-  const [destCity,    setDestCity]    = useState(validCity(prefill.destination_city)  || 'Mumbai')
-  const [departDate,  setDepartDate]  = useState(prefill.depart_date || todayPlusDays(14))
-  const [cabin,       setCabin]       = useState(validCabin(prefill.cabin)            || 'Economy')
-  const [airline,     setAirline]     = useState(validAirline(prefill.airline)        || 'Indigo')
-  const [stops,       setStops]       = useState(validStops(prefill.stops)            || 'zero')
-  const [departTime,  setDepartTime]  = useState('Morning')
-  const [arrivalTime, setArrivalTime] = useState('Afternoon')
+  const [sourceCity,  setSourceCity]  = useState(saved?.source_city ?? 'Delhi')
+  const [destCity,    setDestCity]    = useState(saved?.destination_city ?? 'Mumbai')
+  const [departDate,  setDepartDate]  = useState(saved?.departure_date ?? todayPlusDays(14))
+  const [cabin,       setCabin]       = useState(saved?.flight_class ?? 'Economy')
+  const [airline,     setAirline]     = useState(saved?.airline ?? 'Indigo')
+  const [stops,       setStops]       = useState(saved?.stops ?? 'zero')
+  const [departTime,  setDepartTime]  = useState(saved?.departure_time ?? 'Morning')
+  const [arrivalTime, setArrivalTime] = useState(saved?.arrival_time ?? 'Afternoon')
 
   const [result,    setResult]    = useState(null)
   const [modelInfo, setModelInfo] = useState(null)
   const [loading,   setLoading]   = useState(false)
   const [error,     setError]     = useState(null)
   const [latencyMs, setLatencyMs] = useState(null)
-  const [savedSearchMsg, setSavedSearchMsg] = useState(null) // 'saved' | 'duplicate' | null
-  const [ssHovered, setSsHovered] = useState(false)
+  const [saving,    setSaving]    = useState(false)
+  const [justSaved, setJustSaved] = useState(false)
 
   useEffect(() => {
     document.title = 'Predict — AERODROME Console'
     api.getModelInfo().then(setModelInfo).catch(() => {})
   }, [])
 
-  // Auto-run prediction when arriving from Action Center
-  useEffect(() => {
-    if (prefill.from_action_center && prefill.source_city && prefill.destination_city) {
-      handlePredictAuto(prefill.source_city, prefill.destination_city)
-    }
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
-
-  async function handlePredictAuto(src, dst) {
-    setError(null)
-    setLoading(true)
-    const payload = {
-      airline: 'Indigo',
-      source_city: src,
-      destination_city: dst,
-      departure_time: 'Morning',
-      arrival_time: 'Afternoon',
-      stops: 'zero',
-      class: 'Economy',
-      duration: getDuration(src, dst),
-      days_left: 14,
-    }
-    const t0 = performance.now()
+  async function handleSaveSearch() {
+    setSaving(true)
     try {
-      const res = await api.predict(payload)
-      setLatencyMs(Math.round(performance.now() - t0))
-      setResult(res)
+      await api.createSavedSearch({
+        source_city: sourceCity,
+        destination_city: destCity,
+        flight_class: cabin,
+        airline,
+        departure_time: departTime,
+        arrival_time: arrivalTime,
+        stops,
+        departure_date: departDate,
+      })
+      setJustSaved(true)
+      setTimeout(() => setJustSaved(false), 2000)
     } catch (err) {
       setError(err.message)
     } finally {
-      setLoading(false)
+      setSaving(false)
     }
   }
 
@@ -214,7 +200,6 @@ export default function PredictPage() {
     e.preventDefault()
     if (sourceCity === destCity) { setError('Source and destination must differ.'); return }
     setError(null)
-    setSavedSearchMsg(null)
     setLoading(true)
     const payload = {
       airline,
@@ -243,24 +228,6 @@ export default function PredictPage() {
   const trainedDate   = modelInfo?.trained_at ? modelInfo.trained_at.slice(0, 10) : '—'
   const featureCount  = modelInfo?.feature_importance
     ? Object.keys(modelInfo.feature_importance).length : '—'
-
-  async function handleSaveSearch() {
-    try {
-      await api.createSavedSearch({
-        source_city: sourceCity,
-        destination_city: destCity,
-        flight_class: cabin,
-      })
-      setSavedSearchMsg('saved')
-    } catch (err) {
-      if (err.message && err.message.includes('limit')) {
-        setSavedSearchMsg('duplicate')
-      } else {
-        setSavedSearchMsg('duplicate')
-      }
-    }
-    setTimeout(() => setSavedSearchMsg(null), 3000)
-  }
 
   return (
     <>
@@ -360,48 +327,24 @@ export default function PredictPage() {
 
           </div>
 
-          {/* Error + submit on same row */}
+          {/* Error + save + submit on same row */}
           <div className="pred-form-footer">
             {error && <p className="pred-error">{error}</p>}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginLeft: 'auto' }}>
-              {result && (
-                <button
-                  type="button"
-                  onClick={handleSaveSearch}
-                  onMouseEnter={() => setSsHovered(true)}
-                  onMouseLeave={() => setSsHovered(false)}
-                  style={{
-                    display: 'flex', alignItems: 'center', gap: '0.45rem',
-                    padding: '0.6rem 1.1rem',
-                    background: savedSearchMsg === 'saved'
-                      ? ssHovered ? 'rgba(125,241,197,0.22)' : 'rgba(125,241,197,0.1)'
-                      : savedSearchMsg === 'duplicate'
-                      ? ssHovered ? 'rgba(251,191,36,0.18)' : 'rgba(251,191,36,0.08)'
-                      : ssHovered ? 'rgba(109,94,245,0.22)' : 'transparent',
-                    border: `1px solid ${savedSearchMsg === 'saved' ? 'rgba(125,241,197,0.5)' : savedSearchMsg === 'duplicate' ? 'rgba(251,191,36,0.45)' : ssHovered ? 'rgba(109,94,245,0.7)' : 'rgba(109,94,245,0.4)'}`,
-                    borderRadius: '8px',
-                    color: savedSearchMsg === 'saved' ? '#7df1c5' : savedSearchMsg === 'duplicate' ? '#fbbf24' : '#a78bfa',
-                    fontSize: '0.8rem',
-                    fontWeight: 700,
-                    fontFamily: "'Space Grotesk', sans-serif",
-                    letterSpacing: '0.05em',
-                    cursor: 'pointer',
-                    transition: 'all 200ms',
-                    whiteSpace: 'nowrap',
-                    boxShadow: ssHovered ? '0 0 14px rgba(109,94,245,0.2)' : 'none',
-                  }}
-                >
-                  {savedSearchMsg === 'saved'
-                    ? '✓ SAVED'
-                    : savedSearchMsg === 'duplicate'
-                    ? '⚠ FAILED'
-                    : '☆ SAVE SEARCH'}
-                </button>
+            <button
+              type="button"
+              className="wl-empty-cta"
+              onClick={handleSaveSearch}
+              disabled={saving}
+            >
+              {justSaved ? (
+                <><BookmarkCheck size={14} strokeWidth={2.5} /> SAVED</>
+              ) : (
+                <><Bookmark size={14} strokeWidth={2.5} /> {saving ? 'SAVING...' : 'SAVE_SEARCH'}</>
               )}
-              <button type="submit" className="pred-run-btn" disabled={loading}>
-                {loading ? 'RUNNING...' : 'RUN_PREDICTION'}
-              </button>
-            </div>
+            </button>
+            <button type="submit" className="pred-run-btn" disabled={loading}>
+              {loading ? 'RUNNING...' : 'RUN_PREDICTION'}
+            </button>
           </div>
         </form>
       </div>

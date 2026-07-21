@@ -4,11 +4,12 @@ import { useState } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { Plane, TrendingUp, Bell, Shield } from 'lucide-react'
 
-export default function LoginPage() {
-  const { user, loginWithGoogle, login } = useAuth()
+export default function RegisterPage() {
+  const { user, loginWithGoogle, signup } = useAuth()
 
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
 
@@ -20,11 +21,17 @@ export default function LoginPage() {
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
+
+    if (password !== confirmPassword) {
+      setError('Passwords do not match.')
+      return
+    }
+
     setIsLoading(true)
     try {
-      await login(email, password)
+      await signup(email, password)
     } catch (err) {
-      setError(err.message || 'Authentication failed. Please try again.')
+      setError(err.message || 'Registration failed. Please try again.')
     } finally {
       setIsLoading(false)
     }
@@ -70,12 +77,12 @@ export default function LoginPage() {
           </ul>
         </div>
 
-        {/* Right: sign-in form */}
+        {/* Right: sign-up form */}
         <div className="login-form-panel">
           <div className="login-form-content">
-            <h1 className="login-title">Welcome aboard</h1>
+            <h1 className="login-title">Create your account</h1>
             <p className="login-subtitle">
-              Sign in to access your dashboard, saved flights, and personalized insights.
+              Sign up to track prices, save searches, and get personalized insights.
             </p>
 
             {error && (
@@ -102,17 +109,22 @@ export default function LoginPage() {
                 onChange={(e) => setPassword(e.target.value)}
                 style={{ padding: '0.65rem 1rem', borderRadius: '8px', border: '1px solid var(--border)', background: 'rgba(255,255,255,0.03)', color: 'var(--text-white)', outline: 'none' }}
               />
+              <input
+                type="password"
+                placeholder="Confirm password"
+                required
+                minLength={8}
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                style={{ padding: '0.65rem 1rem', borderRadius: '8px', border: '1px solid var(--border)', background: 'rgba(255,255,255,0.03)', color: 'var(--text-white)', outline: 'none' }}
+              />
               <button
                 type="submit"
                 disabled={isLoading}
                 className="login-submit-btn"
               >
-                {isLoading ? 'Please wait...' : 'Sign in'}
+                {isLoading ? 'Please wait...' : 'Create account'}
               </button>
-
-              <Link to="/forgot-password" className="login-link-btn" style={{ textAlign: 'right', fontSize: '0.85rem' }}>
-                Forgot password?
-              </Link>
             </form>
 
             <div style={{ display: 'flex', alignItems: 'center', width: '320px', gap: '1rem', marginBottom: '1.25rem' }}>
@@ -129,31 +141,31 @@ export default function LoginPage() {
                   try {
                     await loginWithGoogle(res)
                   } catch (err) {
-                    setError(err.message || 'Google Login failed. Please try again.')
+                    setError(err.message || 'Google sign-up failed. Please try again.')
                   } finally {
                     setIsLoading(false)
                   }
                 }}
                 onError={() => {
-                  setError('Google Login Failed')
+                  setError('Google sign-up failed.')
                 }}
                 theme="filled_black"
                 size="large"
                 shape="pill"
-                text="continue_with"
+                text="signup_with"
                 width="320"
               />
             </div>
 
             <div style={{ marginTop: '1.25rem', fontSize: '0.85rem', textAlign: 'center', width: '320px', color: 'var(--text-soft)' }}>
-              {"Don't have an account? "}
-              <Link to="/register" className="login-link-btn">
-                Sign up
+              {'Already have an account? '}
+              <Link to="/login" className="login-link-btn">
+                Sign in
               </Link>
             </div>
 
             <p className="login-terms" style={{ marginTop: '1.5rem' }}>
-              By signing in, you agree to our <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>.
+              By signing up, you agree to our <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>.
             </p>
           </div>
         </div>

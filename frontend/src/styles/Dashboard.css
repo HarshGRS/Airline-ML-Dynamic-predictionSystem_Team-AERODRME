@@ -713,18 +713,18 @@
 
 
 /* ══════════════════════════════════════════════════════
-   SAVED SEARCH PAGE
+   WATCHLIST PAGE
    ══════════════════════════════════════════════════════ */
 
 /* ── Summary strip ────────────────────────────────── */
-.saved-search-summary-strip {
+.wl-summary-strip {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 1rem;
   margin-bottom: 1.5rem;
 }
 
-.saved-search-summary-stat {
+.wl-summary-stat {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -737,12 +737,12 @@
   transition: border-color 200ms, background 200ms;
 }
 
-.saved-search-summary-stat:hover {
+.wl-summary-stat:hover {
   border-color: rgba(34, 211, 238, 0.25);
   background: rgba(12, 9, 32, 0.8);
 }
 
-.saved-search-stat-value {
+.wl-stat-value {
   font-size: 1.35rem;
   font-weight: 900;
   font-family: 'Space Grotesk', sans-serif;
@@ -750,7 +750,7 @@
   letter-spacing: -0.01em;
 }
 
-.saved-search-stat-label {
+.wl-stat-label {
   font-size: 0.6rem;
   font-weight: 700;
   letter-spacing: 0.14em;
@@ -760,23 +760,23 @@
 }
 
 /* ── Items panel ──────────────────────────────────── */
-.saved-search-items-panel {
+.wl-items-panel {
   min-height: 300px;
 }
 
-.saved-search-items-body {
+.wl-items-body {
   padding: 0.5rem;
 }
 
 /* ── Cards grid ───────────────────────────────────── */
-.saved-search-cards-grid {
+.wl-cards-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
   gap: 0.85rem;
 }
 
 /* ── Single route card ────────────────────────────── */
-.saved-search-route-card {
+.wl-route-card {
   position: relative;
   padding: 1rem 1.15rem;
   border-radius: 14px;
@@ -797,33 +797,33 @@
   }
 }
 
-.saved-search-route-card:hover {
+.wl-route-card:hover {
   border-color: rgba(34, 211, 238, 0.25);
   background: rgba(12, 9, 32, 0.75);
   transform: translateY(-2px);
 }
 
-.saved-search-card-exit {
+.wl-card-exit {
   opacity: 0 !important;
   transform: scale(0.94) translateY(8px) !important;
   pointer-events: none;
 }
 
 /* Card header: route codes + delete */
-.saved-search-card-header {
+.wl-card-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   margin-bottom: 0.25rem;
 }
 
-.saved-search-card-route {
+.wl-card-route {
   display: flex;
   align-items: center;
   gap: 0.45rem;
 }
 
-.saved-search-card-code {
+.wl-card-code {
   font-size: 1.1rem;
   font-weight: 900;
   font-family: 'Space Grotesk', sans-serif;
@@ -831,12 +831,12 @@
   letter-spacing: 0.04em;
 }
 
-.saved-search-card-arrow {
+.wl-card-arrow {
   color: #22d3ee;
   flex-shrink: 0;
 }
 
-.saved-search-card-delete {
+.wl-card-delete {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -850,14 +850,14 @@
   transition: all 160ms;
 }
 
-.saved-search-card-delete:hover {
+.wl-card-delete:hover {
   background: rgba(239, 68, 68, 0.12);
   border-color: rgba(239, 68, 68, 0.4);
   color: #f87171;
 }
 
 /* Sub-route label */
-.saved-search-card-sub-route {
+.wl-card-sub-route {
   font-size: 0.72rem;
   color: var(--text-muted);
   font-family: 'Space Grotesk', sans-serif;
@@ -865,14 +865,14 @@
 }
 
 /* Info grid */
-.saved-search-card-info-grid {
+.wl-card-info-grid {
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
   margin-bottom: 0.8rem;
 }
 
-.saved-search-card-info {
+.wl-card-info {
   display: inline-flex;
   align-items: center;
   gap: 0.3rem;
@@ -887,12 +887,12 @@
   white-space: nowrap;
 }
 
-.saved-search-card-info svg {
+.wl-card-info svg {
   color: var(--text-muted);
   flex-shrink: 0;
 }
 
-.saved-search-card-class-dot {
+.wl-card-class-dot {
   width: 5px;
   height: 5px;
   border-radius: 50%;
@@ -901,7 +901,7 @@
 }
 
 /* Bottom row: price, verdict, trend, time */
-.saved-search-card-bottom {
+.wl-card-bottom {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
@@ -910,7 +910,7 @@
   border-top: 1px solid rgba(109, 94, 245, 0.08);
 }
 
-.saved-search-card-price {
+.wl-card-price {
   font-size: 1.1rem;
   font-weight: 900;
   font-family: 'Space Grotesk', sans-serif;
@@ -918,7 +918,7 @@
   letter-spacing: -0.01em;
 }
 
-.saved-search-card-verdict {
+.wl-card-verdict {
   display: inline-flex;
   align-items: center;
   padding: 0.2rem 0.55rem;
@@ -943,7 +943,7 @@
   color: #fbbf24;
 }
 
-.saved-search-card-trend {
+.wl-card-trend {
   display: inline-flex;
   align-items: center;
   gap: 0.25rem;
@@ -966,7 +966,7 @@
   color: var(--text-muted);
 }
 
-.saved-search-card-time {
+.wl-card-time {
   display: inline-flex;
   align-items: center;
   gap: 0.25rem;
@@ -978,7 +978,7 @@
 }
 
 /* ── Total badge (reused) ─────────────────────────── */
-.saved-search-total-badge {
+.wl-total-badge {
   font-size: 0.65rem;
   font-weight: 700;
   letter-spacing: 0.1em;
@@ -988,7 +988,7 @@
 }
 
 /* ── Empty state ──────────────────────────────────── */
-.saved-search-empty {
+.wl-empty {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -1001,11 +1001,11 @@
   text-align: center;
 }
 
-.saved-search-empty p {
+.wl-empty p {
   margin: 0;
 }
 
-.saved-search-empty-cta {
+.wl-empty-cta {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
@@ -1025,7 +1025,7 @@
   box-shadow: 0 0 20px rgba(34, 211, 238, 0.2);
 }
 
-.saved-search-empty-cta:hover {
+.wl-empty-cta:hover {
   background: #67e8f9;
   box-shadow: 0 0 30px rgba(34, 211, 238, 0.35);
   transform: translateY(-1px);
@@ -1033,26 +1033,26 @@
 
 /* ── Responsive ───────────────────────────────────── */
 @media (max-width: 900px) {
-  .saved-search-summary-strip {
+  .wl-summary-strip {
     grid-template-columns: repeat(2, 1fr);
   }
 
-  .saved-search-cards-grid {
+  .wl-cards-grid {
     grid-template-columns: 1fr;
   }
 }
 
 @media (max-width: 480px) {
-  .saved-search-summary-strip {
+  .wl-summary-strip {
     grid-template-columns: repeat(2, 1fr);
     gap: 0.6rem;
   }
 
-  .saved-search-summary-stat {
+  .wl-summary-stat {
     padding: 0.85rem 0.5rem;
   }
 
-  .saved-search-stat-value {
+  .wl-stat-value {
     font-size: 1.1rem;
   }
 }
