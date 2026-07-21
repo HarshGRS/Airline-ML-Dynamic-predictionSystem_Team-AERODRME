@@ -91,7 +91,7 @@ export default function RegisterPage() {
               </div>
             )}
 
-            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginBottom: '1.25rem', width: '320px' }}>
+            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginBottom: '1.25rem', width: '100%', maxWidth: '320px' }}>
               <input
                 type="email"
                 placeholder="Email address"
@@ -127,7 +127,7 @@ export default function RegisterPage() {
               </button>
             </form>
 
-            <div style={{ display: 'flex', alignItems: 'center', width: '320px', gap: '1rem', marginBottom: '1.25rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', width: '100%', maxWidth: '320px', gap: '1rem', marginBottom: '1.25rem' }}>
               <div style={{ flex: 1, height: '1px', backgroundColor: 'var(--border)' }}></div>
               <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>or</span>
               <div style={{ flex: 1, height: '1px', backgroundColor: 'var(--border)' }}></div>
@@ -157,7 +157,7 @@ export default function RegisterPage() {
               />
             </div>
 
-            <div style={{ marginTop: '1.25rem', fontSize: '0.85rem', textAlign: 'center', width: '320px', color: 'var(--text-soft)' }}>
+            <div style={{ marginTop: '1.25rem', fontSize: '0.85rem', textAlign: 'center', width: '100%', maxWidth: '320px', color: 'var(--text-soft)' }}>
               {'Already have an account? '}
               <Link to="/login" className="login-link-btn">
                 Sign in

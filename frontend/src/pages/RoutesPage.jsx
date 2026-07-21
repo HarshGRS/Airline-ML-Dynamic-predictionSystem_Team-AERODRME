@@ -57,32 +57,34 @@ export default function RoutesPage() {
       </div>
 
       <div className="console-panel" style={{ marginTop: '2rem' }}>
-        <table className="routes-table">
-          <thead>
-            <tr>
-              <th>Route</th>
-              <th>Current Price</th>
-              <th>7D Prediction</th>
-              <th>Delta</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredRoutes.map((r, i) => (
-              <tr key={i}>
-                <td>
-                  <span className="route-name">{r.from}</span>
-                  <span className="route-arrow">→</span>
-                  <span className="route-name">{r.to}</span>
-                </td>
-                <td className="route-price">₹{formatINR(r.price)}</td>
-                <td className="route-pred">₹{formatINR(r.predicted)}</td>
-                <td className={`route-delta ${r.delta >= 0 ? 'positive' : 'negative'}`}>
-                  {r.delta >= 0 ? '+' : ''}{r.delta}%
-                </td>
+        <div className="table-scroll">
+          <table className="routes-table">
+            <thead>
+              <tr>
+                <th>Route</th>
+                <th>Current Price</th>
+                <th>7D Prediction</th>
+                <th>Delta</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {filteredRoutes.map((r, i) => (
+                <tr key={i}>
+                  <td>
+                    <span className="route-name">{r.from}</span>
+                    <span className="route-arrow">→</span>
+                    <span className="route-name">{r.to}</span>
+                  </td>
+                  <td className="route-price">₹{formatINR(r.price)}</td>
+                  <td className="route-pred">₹{formatINR(r.predicted)}</td>
+                  <td className={`route-delta ${r.delta >= 0 ? 'positive' : 'negative'}`}>
+                    {r.delta >= 0 ? '+' : ''}{r.delta}%
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
         {filteredRoutes.length === 0 && (
           <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-muted)' }}>
             No routes match your search.

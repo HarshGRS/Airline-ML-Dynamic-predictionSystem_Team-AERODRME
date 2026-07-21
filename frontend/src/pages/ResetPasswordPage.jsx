@@ -91,7 +91,7 @@ export default function ResetPasswordPage() {
               </div>
             )}
 
-            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginBottom: '1.25rem', width: '320px' }}>
+            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginBottom: '1.25rem', width: '100%', maxWidth: '320px' }}>
               <input
                 type="password"
                 placeholder="New password"
@@ -119,7 +119,7 @@ export default function ResetPasswordPage() {
               </button>
             </form>
 
-            <div style={{ marginTop: '0.5rem', fontSize: '0.85rem', textAlign: 'center', width: '320px', color: 'var(--text-soft)' }}>
+            <div style={{ marginTop: '0.5rem', fontSize: '0.85rem', textAlign: 'center', width: '100%', maxWidth: '320px', color: 'var(--text-soft)' }}>
               <Link to="/login" className="login-link-btn">
                 Back to sign in
               </Link>

@@ -201,32 +201,34 @@ export default function DashboardPage() {
             <h2 className="console-panel-title">TOP_ROUTES</h2>
             <Link to="/dashboard/routes" className="console-panel-link">VIEW_ALL →</Link>
           </div>
-          <table className="routes-table">
-            <thead>
-              <tr>
-                <th>Route</th>
-                <th>Price</th>
-                <th>7D_Pred</th>
-                <th>Δ</th>
-              </tr>
-            </thead>
-            <tbody>
-              {data.top_routes.map((r) => (
-                <tr key={`${r.from}-${r.to}`}>
-                  <td>
-                    <span className="route-name">{r.from}</span>
-                    <span className="route-arrow">→</span>
-                    <span className="route-name">{r.to}</span>
-                  </td>
-                  <td className="route-price">₹{formatINR(r.price)}</td>
-                  <td className="route-pred">₹{formatINR(r.predicted)}</td>
-                  <td className={`route-delta ${r.delta >= 0 ? 'positive' : 'negative'}`}>
-                    {r.delta >= 0 ? '+' : ''}{r.delta}%
-                  </td>
+          <div className="table-scroll">
+            <table className="routes-table">
+              <thead>
+                <tr>
+                  <th>Route</th>
+                  <th>Price</th>
+                  <th>7D_Pred</th>
+                  <th>Δ</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {data.top_routes.map((r) => (
+                  <tr key={`${r.from}-${r.to}`}>
+                    <td>
+                      <span className="route-name">{r.from}</span>
+                      <span className="route-arrow">→</span>
+                      <span className="route-name">{r.to}</span>
+                    </td>
+                    <td className="route-price">₹{formatINR(r.price)}</td>
+                    <td className="route-pred">₹{formatINR(r.predicted)}</td>
+                    <td className={`route-delta ${r.delta >= 0 ? 'positive' : 'negative'}`}>
+                      {r.delta >= 0 ? '+' : ''}{r.delta}%
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
 
         {/* Anomaly Feed */}

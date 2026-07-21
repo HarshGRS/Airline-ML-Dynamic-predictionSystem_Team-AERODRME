@@ -1,7 +1,7 @@
 import { Routes, Route, useLocation } from 'react-router-dom'
 import { useCallback, useEffect, useState, lazy, Suspense } from 'react'
 import { NavLink, useNavigate } from 'react-router-dom'
-import { LayoutDashboard, Plane, LogOut, Map as MapIcon, Info, Code2, ExternalLink } from 'lucide-react'
+import { LayoutDashboard, Plane, LogOut, Map as MapIcon, Info, Code2, ExternalLink, Menu, X } from 'lucide-react'
 import { useAuth } from './context/AuthContext'
 import HomePage from './pages/HomePage.jsx'
 import ProtectedRoute from './components/ProtectedRoute.jsx'
@@ -33,6 +33,7 @@ export default function App() {
   const navigate = useNavigate()
   const location = useLocation()
   const { user, logout } = useAuth()
+  const [mobileNavOpen, setMobileNavOpen] = useState(false)
   const [watchlist, setWatchlist] = useState(() => {
     try {
       return JSON.parse(localStorage.getItem('aerodrome_watchlist') || '[]')
@@ -45,6 +46,11 @@ export default function App() {
   useEffect(() => {
     localStorage.setItem('aerodrome_watchlist', JSON.stringify(watchlist))
   }, [watchlist])
+
+  // Close the mobile nav whenever the route changes
+  useEffect(() => {
+    setMobileNavOpen(false)
+  }, [location.pathname])
 
   const addToWatchlist = useCallback((flight) => {
     setWatchlist((prev) => {
@@ -102,7 +108,17 @@ export default function App() {
           </div>
         </NavLink>
 
-        <nav className="topnav" aria-label="Primary">
+        <button
+          type="button"
+          className="mobile-nav-toggle"
+          onClick={() => setMobileNavOpen((open) => !open)}
+          aria-label="Toggle navigation menu"
+          aria-expanded={mobileNavOpen}
+        >
+          {mobileNavOpen ? <X size={18} /> : <Menu size={18} />}
+        </button>
+
+        <nav className={`topnav ${mobileNavOpen ? 'topnav--open' : ''}`} aria-label="Primary">
           <NavLink
             to="/"
             end

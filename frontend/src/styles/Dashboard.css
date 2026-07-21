@@ -415,8 +415,14 @@
 }
 
 /* ── Top Routes Table ─────────────────────────────── */
+.table-scroll {
+  width: 100%;
+  overflow-x: auto;
+}
+
 .routes-table {
   width: 100%;
+  min-width: 420px;
   border-collapse: collapse;
 }
 
@@ -1125,7 +1131,7 @@
 
 /* Grid Container */
 .cal-grid-container {
-  background: var(--bg-panel);
+  background: var(--surface);
   border: 1px solid var(--border-subtle);
   border-radius: 12px;
   padding: 1.5rem;

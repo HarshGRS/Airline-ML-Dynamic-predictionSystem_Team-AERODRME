@@ -83,7 +83,7 @@ export default function ForgotPasswordPage() {
             )}
 
             {!message && (
-              <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginBottom: '1.25rem', width: '320px' }}>
+              <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginBottom: '1.25rem', width: '100%', maxWidth: '320px' }}>
                 <input
                   type="email"
                   placeholder="Email address"
@@ -102,7 +102,7 @@ export default function ForgotPasswordPage() {
               </form>
             )}
 
-            <div style={{ marginTop: '0.5rem', fontSize: '0.85rem', textAlign: 'center', width: '320px', color: 'var(--text-soft)' }}>
+            <div style={{ marginTop: '0.5rem', fontSize: '0.85rem', textAlign: 'center', width: '100%', maxWidth: '320px', color: 'var(--text-soft)' }}>
               Remembered your password?{' '}
               <Link to="/login" className="login-link-btn">
                 Sign in

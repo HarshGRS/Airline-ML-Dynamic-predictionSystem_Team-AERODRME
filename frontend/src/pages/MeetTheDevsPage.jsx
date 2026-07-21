@@ -11,10 +11,10 @@ import {
 } from 'lucide-react';
 
 const developers = [
-  { name: 'Dolly', image: '/Doly_dev.jpeg', position: 'center 15%', role: 'AIML Developer' },
-  { name: 'Sharad Kumar', image: '/Sharad_dev.jpeg', position: 'center 30%', role: 'Backend Developer' },
-  { name: 'Sumit Kumar', image: '/sumit_dev.jpg', position: 'center 15%', role: 'Backend Developer' },
-    { name: 'Harsh Raj Singh', image: '/Harsh_dev.jpeg', position: 'center 10%', role: 'Backend Developer' },
+  { name: 'Dolly', image: '/Doly_dev.jpeg', position: 'center 15%', role: 'ML Developer' },
+  { name: 'Sharad Kumar', image: '/Sharad_dev.jpeg', position: 'center 30%', role: 'Full-Stack Developer' },
+  { name: 'Sumit Kumar', image: '/sumit_dev.jpg', position: 'center 15%', role: 'Full-Stack Developer' },
+    { name: 'Harsh Raj Singh', image: '/Harsh_dev.jpeg', position: 'center 10%', role: 'Full-Stack Developer' },
   { name: 'Ayushi Dubey', image: '/Ayushi_dev.jpeg', position: 'center 10%', role: 'Frontend Developer' },
   { name: 'Nitin Khulbe', image: '/Nitin_dev.jpeg', position: 'center 20%', role: 'Frontend Developer' },
   { name: 'Vaibhav', image: '/vaibhav_dev.jpeg', position: 'center 25%', role: 'Frontend Developer' },

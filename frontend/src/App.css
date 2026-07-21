@@ -186,6 +186,27 @@ body {
   transform: translateY(-1px);
 }
 
+/* Hidden on desktop — shown at the mobile breakpoint below, where .topnav collapses into a dropdown */
+.mobile-nav-toggle {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 2.4rem;
+  height: 2.4rem;
+  flex-shrink: 0;
+  border-radius: 10px;
+  border: 1px solid rgba(109, 94, 245, 0.3);
+  background: rgba(109, 94, 245, 0.1);
+  color: var(--text-white);
+  cursor: pointer;
+  transition: background 150ms ease, border-color 150ms ease;
+}
+
+.mobile-nav-toggle:hover {
+  background: rgba(109, 94, 245, 0.2);
+  border-color: rgba(109, 94, 245, 0.5);
+}
+
 /* ── Eyebrow ────────────────────────────────────── */
 .eyebrow {
   display: inline-flex;
@@ -1519,9 +1540,43 @@ body {
   }
 
   .topbar {
-    flex-direction: column;
-    align-items: flex-start;
+    flex-wrap: wrap;
     top: 0.5rem;
+  }
+
+  .mobile-nav-toggle {
+    display: inline-flex;
+  }
+
+  .topnav {
+    flex-basis: 100%;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.3rem;
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+    transition: max-height 280ms ease, opacity 200ms ease, margin-top 280ms ease;
+  }
+
+  .topnav.topnav--open {
+    max-height: 24rem;
+    opacity: 1;
+    margin-top: 0.85rem;
+  }
+
+  .topnav-link {
+    width: 100%;
+  }
+
+  .signin-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .user-menu {
+    width: 100%;
+    justify-content: space-between;
   }
 
   .hero-panel {
@@ -1545,6 +1600,26 @@ body {
 
   .footer-columns {
     grid-template-columns: 1fr;
+  }
+
+  .login-card {
+    grid-template-columns: 1fr;
+  }
+
+  .login-branding {
+    display: none;
+  }
+
+  .login-form-panel {
+    padding: 2rem 1.25rem;
+  }
+
+  .hero-form-float {
+    margin-bottom: 0.5rem;
+  }
+
+  .features-section {
+    padding-top: 1.5rem;
   }
 }
 
