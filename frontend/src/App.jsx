@@ -1,7 +1,7 @@
 import { Routes, Route, useLocation } from 'react-router-dom'
 import { useCallback, useEffect, useState } from 'react'
 import { NavLink, useNavigate } from 'react-router-dom'
-import { LayoutDashboard, Plane, LogOut, Map as MapIcon } from 'lucide-react'
+import { LayoutDashboard, Plane, LogOut, Map as MapIcon, Info, Code2, ExternalLink } from 'lucide-react'
 import { useAuth } from './context/AuthContext'
 import HomePage from './pages/HomePage.jsx'
 import MapPage from './pages/MapPage.jsx'
@@ -110,6 +110,13 @@ export default function App() {
             Map
           </NavLink>
           <NavLink
+            to="/devs"
+            className={({ isActive }) => `topnav-link ${isActive ? 'active' : ''}`}
+          >
+            <Info size={14} strokeWidth={2.2} />
+            About
+          </NavLink>
+          <NavLink
             to="/dashboard"
             className={({ isActive }) => `topnav-link ${isActive ? 'active' : ''}`}
           >
@@ -158,10 +165,12 @@ export default function App() {
         <Route
           path="/results"
           element={
-            <ResultsPage
-              onAddToWatchlist={addToWatchlist}
-              watchlist={watchlist}
-            />
+            <ProtectedRoute>
+              <ResultsPage
+                onAddToWatchlist={addToWatchlist}
+                watchlist={watchlist}
+              />
+            </ProtectedRoute>
           }
         />
         <Route path="*" element={<NotFoundPage />} />
@@ -178,23 +187,58 @@ export default function App() {
             </div>
           </div>
           <p>A professional flight-planning experience that combines route search, price trends, and machine learning support.</p>
+          <a
+            href="https://github.com/HarshGRS/Airline-ML-Dynamic-predictionSystem_Team-AERODRME"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="footer-repo-link"
+          >
+            <Code2 size={13} strokeWidth={2.2} />
+            View source on GitHub
+            <ExternalLink size={11} strokeWidth={2.2} />
+          </a>
         </div>
 
         <div className="footer-columns">
-          {Object.entries({
-            product: ['Search flights', 'Price trends', 'Booking guidance', 'Saved trips'],
-            company: ['Meet the Devs', 'Careers', 'Privacy', 'Terms'],
-            support: ['Help center', 'Contact support', 'Travel advice', 'Accessibility'],
-          }).map(([heading, links]) => (
+          {[
+            {
+              heading: 'product',
+              links: [
+                { label: 'Search flights', to: '/#search' },
+                { label: 'Route map', to: '/map' },
+                { label: 'Fare calendar', to: '/dashboard/calendar' },
+                { label: 'Saved searches', to: '/dashboard/saved-searches' },
+              ],
+            },
+            {
+              heading: 'account',
+              links: [
+                { label: 'Dashboard', to: '/dashboard' },
+                { label: 'Predict fares', to: '/dashboard/predict' },
+                { label: 'Sign in', to: '/login' },
+                { label: 'Create account', to: '/register' },
+              ],
+            },
+            {
+              heading: 'company',
+              links: [
+                { label: 'About AERODROME', to: '/devs' },
+                { label: 'Meet the Devs', to: '/devs' },
+                { label: 'Action center', to: '/dashboard/action-center' },
+              ],
+            },
+          ].map(({ heading, links }) => (
             <div key={heading} className="footer-column">
               <h3>{heading}</h3>
               <ul>
                 {links.map((link) => (
-                  <li key={link}>
-                    {link === 'Meet the Devs' ? (
-                      <NavLink to="/devs" style={{ color: 'var(--text-soft)', textDecoration: 'none' }}>{link}</NavLink>
+                  <li key={link.label}>
+                    {link.to.startsWith('/#') ? (
+                      <a href={link.to}>{link.label}</a>
                     ) : (
-                      <a href="/#search">{link}</a>
+                      <NavLink to={link.to} style={{ color: 'var(--text-muted)', textDecoration: 'none' }}>
+                        {link.label}
+                      </NavLink>
                     )}
                   </li>
                 ))}

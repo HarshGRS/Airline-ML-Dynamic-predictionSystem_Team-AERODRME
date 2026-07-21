@@ -31,8 +31,6 @@ GENERIC_FORGOT_PASSWORD_MESSAGE = (
     "If an account exists for that email, a password reset link has been sent."
 )
 
-GOOGLE_CLIENT_ID = "228732067081-q943mama762asq95opprl5fn173ule1t.apps.googleusercontent.com"
-
 router = APIRouter(prefix="/auth", tags=["auth"])
 
 
@@ -71,7 +69,7 @@ def get_me(current_user: User = Depends(get_current_user)) -> User:
 def google_login(request: Request, payload: GoogleLoginRequest, db: Session = Depends(get_db)) -> TokenResponse:
     try:
         idinfo = id_token.verify_oauth2_token(
-            payload.credential, google_requests.Request(), GOOGLE_CLIENT_ID
+            payload.credential, google_requests.Request(), settings.google_client_id
         )
         email = idinfo.get("email")
         if not email:

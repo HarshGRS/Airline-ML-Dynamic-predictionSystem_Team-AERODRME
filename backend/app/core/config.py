@@ -10,6 +10,7 @@ class Settings(BaseSettings):
     database_url: str = "sqlite:///./app.db"
     brevo_api_key: str = ""
     brevo_sender_email: str = ""
+    google_client_id: str = ""
     # Base URL of the deployed frontend — used to build the reset-password link in emails.
     frontend_url: str = "http://localhost:5173"
 
