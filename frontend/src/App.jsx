@@ -1,26 +1,33 @@
 import { Routes, Route, useLocation } from 'react-router-dom'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useState, lazy, Suspense } from 'react'
 import { NavLink, useNavigate } from 'react-router-dom'
 import { LayoutDashboard, Plane, LogOut, Map as MapIcon, Info, Code2, ExternalLink } from 'lucide-react'
 import { useAuth } from './context/AuthContext'
 import HomePage from './pages/HomePage.jsx'
-import MapPage from './pages/MapPage.jsx'
-import ResultsPage from './pages/ResultsPage.jsx'
-import DashboardPage from './pages/DashboardPage.jsx'
-import SavedSearchesPage from './pages/SavedSearchesPage.jsx'
-import RoutesPage from './pages/RoutesPage.jsx'
-import ActionCenterPage from './pages/ActionCenterPage.jsx'
-import PredictPage from './pages/PredictPage.jsx'
-import CalendarPage from './pages/CalendarPage.jsx'
-import LoginPage from './pages/LoginPage.jsx'
-import RegisterPage from './pages/RegisterPage.jsx'
-import ForgotPasswordPage from './pages/ForgotPasswordPage.jsx'
-import ResetPasswordPage from './pages/ResetPasswordPage.jsx'
-import MeetTheDevsPage from './pages/MeetTheDevsPage.jsx'
-import NotFoundPage from './pages/NotFoundPage.jsx'
 import ProtectedRoute from './components/ProtectedRoute.jsx'
 import DashboardLayout from './components/DashboardLayout.jsx'
 import './App.css'
+
+// Lazy-loaded: keeps the initial bundle small — HomePage (the landing route)
+// loads eagerly, everything else is fetched on first navigation.
+const MapPage = lazy(() => import('./pages/MapPage.jsx'))
+const ResultsPage = lazy(() => import('./pages/ResultsPage.jsx'))
+const DashboardPage = lazy(() => import('./pages/DashboardPage.jsx'))
+const SavedSearchesPage = lazy(() => import('./pages/SavedSearchesPage.jsx'))
+const RoutesPage = lazy(() => import('./pages/RoutesPage.jsx'))
+const ActionCenterPage = lazy(() => import('./pages/ActionCenterPage.jsx'))
+const PredictPage = lazy(() => import('./pages/PredictPage.jsx'))
+const CalendarPage = lazy(() => import('./pages/CalendarPage.jsx'))
+const LoginPage = lazy(() => import('./pages/LoginPage.jsx'))
+const RegisterPage = lazy(() => import('./pages/RegisterPage.jsx'))
+const ForgotPasswordPage = lazy(() => import('./pages/ForgotPasswordPage.jsx'))
+const ResetPasswordPage = lazy(() => import('./pages/ResetPasswordPage.jsx'))
+const MeetTheDevsPage = lazy(() => import('./pages/MeetTheDevsPage.jsx'))
+const NotFoundPage = lazy(() => import('./pages/NotFoundPage.jsx'))
+
+function RouteFallback() {
+  return <div className="route-loading" aria-label="Loading" />
+}
 
 export default function App() {
   const navigate = useNavigate()
@@ -65,16 +72,18 @@ export default function App() {
     return (
       <ProtectedRoute>
         <DashboardLayout>
-          <Routes>
-            <Route path="/dashboard" element={<DashboardPage />} />
-            <Route path="/dashboard/predict" element={<PredictPage />} />
-            <Route path="/dashboard/calendar" element={<CalendarPage />} />
-            <Route path="/dashboard/routes" element={<RoutesPage />} />
-            <Route path="/dashboard/action-center" element={<ActionCenterPage />} />
-            <Route path="/dashboard/saved-searches" element={<SavedSearchesPage />} />
-            {/* Future sub-pages: etc. */}
-            <Route path="/dashboard/*" element={<DashboardPage />} />
-          </Routes>
+          <Suspense fallback={<RouteFallback />}>
+            <Routes>
+              <Route path="/dashboard" element={<DashboardPage />} />
+              <Route path="/dashboard/predict" element={<PredictPage />} />
+              <Route path="/dashboard/calendar" element={<CalendarPage />} />
+              <Route path="/dashboard/routes" element={<RoutesPage />} />
+              <Route path="/dashboard/action-center" element={<ActionCenterPage />} />
+              <Route path="/dashboard/saved-searches" element={<SavedSearchesPage />} />
+              {/* Future sub-pages: etc. */}
+              <Route path="/dashboard/*" element={<DashboardPage />} />
+            </Routes>
+          </Suspense>
         </DashboardLayout>
       </ProtectedRoute>
     )
@@ -154,27 +163,29 @@ export default function App() {
       </header>
       )}
 
-      <Routes>
-        <Route path="/" element={<HomePage />} />
-        <Route path="/map" element={<MapPage />} />
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/register" element={<RegisterPage />} />
-        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-        <Route path="/reset-password" element={<ResetPasswordPage />} />
-        <Route path="/devs" element={<MeetTheDevsPage />} />
-        <Route
-          path="/results"
-          element={
-            <ProtectedRoute>
-              <ResultsPage
-                onAddToWatchlist={addToWatchlist}
-                watchlist={watchlist}
-              />
-            </ProtectedRoute>
-          }
-        />
-        <Route path="*" element={<NotFoundPage />} />
-      </Routes>
+      <Suspense fallback={<RouteFallback />}>
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/map" element={<MapPage />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+          <Route path="/reset-password" element={<ResetPasswordPage />} />
+          <Route path="/devs" element={<MeetTheDevsPage />} />
+          <Route
+            path="/results"
+            element={
+              <ProtectedRoute>
+                <ResultsPage
+                  onAddToWatchlist={addToWatchlist}
+                  watchlist={watchlist}
+                />
+              </ProtectedRoute>
+            }
+          />
+          <Route path="*" element={<NotFoundPage />} />
+        </Routes>
+      </Suspense>
 
       {!isAuthPage && (
       <footer className="platform-footer" id="footer">

@@ -2,7 +2,10 @@
  * Frontend API client
  */
 
-const API_BASE = '/api/v1'
+// In dev, Vite's proxy (vite.config.js) forwards '/api/v1' to the local backend.
+// In production there's no such proxy, so VITE_API_BASE_URL must point at the
+// deployed backend (e.g. https://your-service.onrender.com/api/v1).
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '/api/v1'
 
 class ApiError extends Error {
   constructor(message, status) {

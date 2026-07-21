@@ -7,11 +7,11 @@ Indian city-pair route at varying days_left values.
 All data is derived from real ML model predictions — no hardcoded numbers.
 """
 
-import random
 from datetime import datetime, timezone
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Request
 
+from app.core.rate_limit import limiter
 from app.schemas.predict import (
     Airline,
     City,
@@ -239,7 +239,9 @@ def _build_price_trend(service: PredictionService) -> tuple[list[dict], str]:
 
 
 @router.get("/dashboard")
+@limiter.limit("20/minute")
 def get_dashboard(
+    request: Request,
     service: PredictionService = Depends(get_prediction_service),
 ) -> dict:
     """Aggregate dashboard data from the ML model."""
@@ -260,7 +262,9 @@ def get_dashboard(
 
 
 @router.get("/dashboard/routes")
+@limiter.limit("20/minute")
 def get_all_routes(
+    request: Request,
     service: PredictionService = Depends(get_prediction_service),
 ) -> list[dict]:
     """Get predictions for all 30 routes."""
@@ -326,7 +330,9 @@ def _build_all_anomalies(service: PredictionService) -> list[dict]:
 
 
 @router.get("/dashboard/anomalies")
+@limiter.limit("20/minute")
 def get_all_anomalies(
+    request: Request,
     service: PredictionService = Depends(get_prediction_service),
 ) -> list[dict]:
     """Get dynamically generated anomalies for all routes."""
