@@ -85,7 +85,7 @@ export default function LoginPage() {
             </li>
             <li>
               <span className="login-feature-icon"><Bell size={16} /></span>
-              Price drop alerts & watchlists
+              Price drop alerts & saved searches
             </li>
             <li>
               <span className="login-feature-icon"><Shield size={16} /></span>

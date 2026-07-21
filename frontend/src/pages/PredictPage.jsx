@@ -169,8 +169,8 @@ export default function PredictPage() {
   const [loading,   setLoading]   = useState(false)
   const [error,     setError]     = useState(null)
   const [latencyMs, setLatencyMs] = useState(null)
-  const [watchlistMsg, setWatchlistMsg] = useState(null) // 'saved' | 'duplicate' | null
-  const [wlHovered, setWlHovered] = useState(false)
+  const [savedSearchMsg, setSavedSearchMsg] = useState(null) // 'saved' | 'duplicate' | null
+  const [ssHovered, setSsHovered] = useState(false)
 
   useEffect(() => {
     document.title = 'Predict — AERODROME Console'
@@ -214,7 +214,7 @@ export default function PredictPage() {
     e.preventDefault()
     if (sourceCity === destCity) { setError('Source and destination must differ.'); return }
     setError(null)
-    setWatchlistMsg(null)
+    setSavedSearchMsg(null)
     setLoading(true)
     const payload = {
       airline,
@@ -244,34 +244,22 @@ export default function PredictPage() {
   const featureCount  = modelInfo?.feature_importance
     ? Object.keys(modelInfo.feature_importance).length : '—'
 
-  function handleSaveToWatchlist() {
-    const entry = {
-      from: sourceCity,
-      to: destCity,
-      airline: airline.replace(/_/g, ' '),
-      departDate,
-      travelClass: cabin,
-      stops,
-      predictedPrice: result.predicted_price,
-      id: Date.now(),
-      addedAt: new Date().toISOString(),
-    }
+  async function handleSaveSearch() {
     try {
-      const existing = JSON.parse(localStorage.getItem('aerodrome_watchlist') || '[]')
-      const isDupe = existing.some(
-        (f) => f.from === entry.from && f.to === entry.to &&
-               f.airline === entry.airline && f.departDate === entry.departDate
-      )
-      if (isDupe) {
-        setWatchlistMsg('duplicate')
+      await api.createSavedSearch({
+        source_city: sourceCity,
+        destination_city: destCity,
+        flight_class: cabin,
+      })
+      setSavedSearchMsg('saved')
+    } catch (err) {
+      if (err.message && err.message.includes('limit')) {
+        setSavedSearchMsg('duplicate')
       } else {
-        localStorage.setItem('aerodrome_watchlist', JSON.stringify([entry, ...existing]))
-        setWatchlistMsg('saved')
+        setSavedSearchMsg('duplicate')
       }
-    } catch {
-      setWatchlistMsg('saved')
     }
-    setTimeout(() => setWatchlistMsg(null), 3000)
+    setTimeout(() => setSavedSearchMsg(null), 3000)
   }
 
   return (
@@ -379,20 +367,20 @@ export default function PredictPage() {
               {result && (
                 <button
                   type="button"
-                  onClick={handleSaveToWatchlist}
-                  onMouseEnter={() => setWlHovered(true)}
-                  onMouseLeave={() => setWlHovered(false)}
+                  onClick={handleSaveSearch}
+                  onMouseEnter={() => setSsHovered(true)}
+                  onMouseLeave={() => setSsHovered(false)}
                   style={{
                     display: 'flex', alignItems: 'center', gap: '0.45rem',
                     padding: '0.6rem 1.1rem',
-                    background: watchlistMsg === 'saved'
-                      ? wlHovered ? 'rgba(125,241,197,0.22)' : 'rgba(125,241,197,0.1)'
-                      : watchlistMsg === 'duplicate'
-                      ? wlHovered ? 'rgba(251,191,36,0.18)' : 'rgba(251,191,36,0.08)'
-                      : wlHovered ? 'rgba(109,94,245,0.22)' : 'transparent',
-                    border: `1px solid ${watchlistMsg === 'saved' ? 'rgba(125,241,197,0.5)' : watchlistMsg === 'duplicate' ? 'rgba(251,191,36,0.45)' : wlHovered ? 'rgba(109,94,245,0.7)' : 'rgba(109,94,245,0.4)'}`,
+                    background: savedSearchMsg === 'saved'
+                      ? ssHovered ? 'rgba(125,241,197,0.22)' : 'rgba(125,241,197,0.1)'
+                      : savedSearchMsg === 'duplicate'
+                      ? ssHovered ? 'rgba(251,191,36,0.18)' : 'rgba(251,191,36,0.08)'
+                      : ssHovered ? 'rgba(109,94,245,0.22)' : 'transparent',
+                    border: `1px solid ${savedSearchMsg === 'saved' ? 'rgba(125,241,197,0.5)' : savedSearchMsg === 'duplicate' ? 'rgba(251,191,36,0.45)' : ssHovered ? 'rgba(109,94,245,0.7)' : 'rgba(109,94,245,0.4)'}`,
                     borderRadius: '8px',
-                    color: watchlistMsg === 'saved' ? '#7df1c5' : watchlistMsg === 'duplicate' ? '#fbbf24' : '#a78bfa',
+                    color: savedSearchMsg === 'saved' ? '#7df1c5' : savedSearchMsg === 'duplicate' ? '#fbbf24' : '#a78bfa',
                     fontSize: '0.8rem',
                     fontWeight: 700,
                     fontFamily: "'Space Grotesk', sans-serif",
@@ -400,14 +388,14 @@ export default function PredictPage() {
                     cursor: 'pointer',
                     transition: 'all 200ms',
                     whiteSpace: 'nowrap',
-                    boxShadow: wlHovered ? '0 0 14px rgba(109,94,245,0.2)' : 'none',
+                    boxShadow: ssHovered ? '0 0 14px rgba(109,94,245,0.2)' : 'none',
                   }}
                 >
-                  {watchlistMsg === 'saved'
+                  {savedSearchMsg === 'saved'
                     ? '✓ SAVED'
-                    : watchlistMsg === 'duplicate'
-                    ? '⚠ ALREADY SAVED'
-                    : '☆ SAVE TO WATCHLIST'}
+                    : savedSearchMsg === 'duplicate'
+                    ? '⚠ FAILED'
+                    : '☆ SAVE SEARCH'}
                 </button>
               )}
               <button type="submit" className="pred-run-btn" disabled={loading}>

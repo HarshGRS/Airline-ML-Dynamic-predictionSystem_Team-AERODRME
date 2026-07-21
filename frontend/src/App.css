@@ -1600,7 +1600,7 @@ body {
 }
 
 /* ─────────────────────────────────────────────────────
-   RESULTS PAGE — actions + watchlist button + toast
+   RESULTS PAGE — actions + saved search button + toast
 ───────────────────────────────────────────────────── */
 .results-actions {
   display: flex;
@@ -1632,7 +1632,7 @@ body {
   background: rgba(109, 94, 245, 0.12);
 }
 
-.watchlist-btn {
+.saved-search-btn {
   display: inline-flex;
   align-items: center;
   gap: 0.42rem;
@@ -1649,7 +1649,7 @@ body {
   white-space: nowrap;
 }
 
-.watchlist-btn:hover:not(:disabled) {
+.saved-search-btn:hover:not(:disabled) {
   background: rgba(109, 94, 245, 0.28);
   border-color: rgba(109, 94, 245, 0.7);
   color: #fff;
@@ -1657,8 +1657,8 @@ body {
   transform: translateY(-1px);
 }
 
-.watchlist-btn--saved,
-.watchlist-btn--saved:hover {
+.saved-search-btn--saved,
+.saved-search-btn--saved:hover {
   border-color: rgba(125, 241, 197, 0.45);
   background: rgba(125, 241, 197, 0.1);
   color: #7df1c5;
@@ -1667,14 +1667,14 @@ body {
   cursor: default;
 }
 
-.watchlist-btn--full {
+.saved-search-btn--full {
   width: 100%;
   justify-content: center;
   margin-top: 0.5rem;
 }
 
 /* Toast notification */
-.watchlist-toast {
+.saved-search-toast {
   position: fixed;
   bottom: 2rem;
   right: 2rem;
@@ -1760,7 +1760,7 @@ body {
 }
 
 /* Watchlist CTA card */
-.insight-card--watchlist-cta {
+.insight-card--saved-search-cta {
   border-color: rgba(109, 94, 245, 0.35);
   background: rgba(109, 94, 245, 0.08);
 }
@@ -2184,15 +2184,15 @@ body {
 }
 
 /* ─────────────────────────────────────────────────────
-   WATCHLIST GRID + CARDS
+   SAVED SEARCH GRID + CARDS
 ───────────────────────────────────────────────────── */
-.wl-grid {
+.saved-search-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
   gap: 0.85rem;
 }
 
-.wl-card {
+.saved-search-card {
   display: flex;
   flex-direction: column;
   gap: 0.85rem;
@@ -2204,32 +2204,32 @@ body {
   transition: border-color 200ms, transform 200ms, box-shadow 200ms;
 }
 
-.wl-card:hover {
+.saved-search-card:hover {
   border-color: rgba(109, 94, 245, 0.42);
   transform: translateY(-2px);
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(109, 94, 245, 0.1) inset;
 }
 
-.wl-card-header {
+.saved-search-card-header {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   gap: 0.75rem;
 }
 
-.wl-route {
+.saved-search-route {
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
 }
 
-.wl-route-cities {
+.saved-search-route-cities {
   display: flex;
   align-items: center;
   gap: 0.5rem;
 }
 
-.wl-city {
+.saved-search-city {
   color: var(--text-white);
   font-family: 'Space Grotesk', sans-serif;
   font-size: 1.15rem;
@@ -2237,18 +2237,18 @@ body {
   letter-spacing: -0.02em;
 }
 
-.wl-plane-icon {
+.saved-search-plane-icon {
   color: var(--indigo-400);
   transform: rotate(90deg);
 }
 
-.wl-airline {
+.saved-search-airline {
   font-size: 0.78rem;
   color: var(--text-muted);
   font-weight: 600;
 }
 
-.wl-remove-btn {
+.saved-search-remove-btn {
   display: grid;
   place-items: center;
   width: 2rem;
@@ -2296,14 +2296,14 @@ body {
   opacity: 0.8;
 }
 
-.wl-remove-btn:hover {
+.saved-search-remove-btn:hover {
   background: rgba(239, 68, 68, 0.15);
   border-color: rgba(239, 68, 68, 0.4);
   color: #f87171;
 }
 
 /* Price row */
-.wl-card-price-row {
+.saved-search-card-price-row {
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
@@ -2314,7 +2314,7 @@ body {
   background: rgba(19, 16, 58, 0.45);
 }
 
-.wl-label {
+.saved-search-label {
   display: block;
   margin-bottom: 0.2rem;
   font-size: 0.65rem;
@@ -2324,7 +2324,7 @@ body {
   color: var(--text-muted);
 }
 
-.wl-price {
+.saved-search-price {
   font-size: 1.35rem;
   font-family: 'Space Grotesk', sans-serif;
   font-weight: 800;
@@ -2332,7 +2332,7 @@ body {
 }
 
 /* Price delta badge */
-.wl-delta {
+.saved-search-delta {
   display: inline-flex;
   align-items: center;
   gap: 0.3rem;
@@ -2344,46 +2344,46 @@ body {
   flex-shrink: 0;
 }
 
-.wl-delta--up {
+.saved-search-delta--up {
   background: rgba(239, 68, 68, 0.12);
   border: 1px solid rgba(239, 68, 68, 0.3);
   color: #f87171;
 }
 
-.wl-delta--down {
+.saved-search-delta--down {
   background: rgba(125, 241, 197, 0.1);
   border: 1px solid rgba(125, 241, 197, 0.3);
   color: #7df1c5;
 }
 
-.wl-delta--stable {
+.saved-search-delta--stable {
   background: rgba(109, 94, 245, 0.1);
   border: 1px solid rgba(109, 94, 245, 0.25);
   color: var(--indigo-300);
 }
 
 /* Meta grid */
-.wl-card-meta {
+.saved-search-card-meta {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.5rem;
 }
 
-.wl-card-meta>div {
+.saved-search-card-meta>div {
   padding: 0.6rem 0.75rem;
   border-radius: 10px;
   border: 1px solid rgba(109, 94, 245, 0.12);
   background: rgba(19, 16, 58, 0.35);
 }
 
-.wl-card-meta strong {
+.saved-search-card-meta strong {
   color: var(--text-main);
   font-size: 0.85rem;
   font-weight: 600;
 }
 
 /* Verdict footer */
-.wl-card-verdict {
+.saved-search-card-verdict {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -2415,15 +2415,15 @@ body {
   color: #fcd34d;
 }
 
-.wl-added {
+.saved-search-added {
   font-size: 0.72rem;
   color: var(--text-muted);
 }
 
 /* ─────────────────────────────────────────────────────
-   EMPTY WATCHLIST STATE
+   EMPTY SAVED SEARCH STATE
 ───────────────────────────────────────────────────── */
-.empty-watchlist {
+.empty-saved-search {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -2431,7 +2431,7 @@ body {
   min-height: 38vh;
 }
 
-.empty-watchlist-inner {
+.empty-saved-search-inner {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -2451,7 +2451,7 @@ body {
   color: var(--indigo-300);
 }
 
-.empty-watchlist-inner h2 {
+.empty-saved-search-inner h2 {
   margin: 0;
   color: var(--text-white);
   font-family: 'Space Grotesk', sans-serif;
@@ -2460,14 +2460,14 @@ body {
   letter-spacing: -0.035em;
 }
 
-.empty-watchlist-inner p {
+.empty-saved-search-inner p {
   margin: 0;
   color: var(--text-soft);
   font-size: 0.95rem;
   line-height: 1.7;
 }
 
-.empty-watchlist-inner strong {
+.empty-saved-search-inner strong {
   color: var(--indigo-200);
 }
 
@@ -2495,7 +2495,7 @@ body {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .wl-grid {
+  .saved-search-grid {
     grid-template-columns: 1fr;
   }
 
@@ -2504,7 +2504,7 @@ body {
     align-items: stretch;
   }
 
-  .watchlist-toast {
+  .saved-search-toast {
     bottom: 1rem;
     right: 1rem;
     left: 1rem;

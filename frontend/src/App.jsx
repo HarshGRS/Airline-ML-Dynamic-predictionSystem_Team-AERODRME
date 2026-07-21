@@ -6,7 +6,7 @@ import HomePage from './pages/HomePage.jsx'
 import MapPage from './pages/MapPage.jsx'
 import ResultsPage from './pages/ResultsPage.jsx'
 import DashboardPage from './pages/DashboardPage.jsx'
-import WatchlistPage from './pages/WatchlistPage.jsx'
+import SavedSearchesPage from './pages/SavedSearchesPage.jsx'
 import RoutesPage from './pages/RoutesPage.jsx'
 import ActionCenterPage from './pages/ActionCenterPage.jsx'
 import PredictPage from './pages/PredictPage.jsx'
@@ -18,37 +18,45 @@ import TermsPage from './pages/TermsPage.jsx'
 import NotFoundPage from './pages/NotFoundPage.jsx'
 import ProtectedRoute from './components/ProtectedRoute.jsx'
 import DashboardLayout from './components/DashboardLayout.jsx'
+import { api } from './services/api.js'
 import './App.css'
 
 export default function App() {
   const navigate = useNavigate()
   const location = useLocation()
   const { user, logout } = useAuth()
-  const [watchlist, setWatchlist] = useState(() => {
-    try {
-      return JSON.parse(localStorage.getItem('aerodrome_watchlist') || '[]')
-    } catch {
-      return []
-    }
-  })
+  const [savedSearches, setSavedSearches] = useState([])
 
-  // Persist watchlist to localStorage on every change
+  // Fetch saved searches when user logs in
   useEffect(() => {
-    localStorage.setItem('aerodrome_watchlist', JSON.stringify(watchlist))
-  }, [watchlist])
+    if (user) {
+      api.getSavedSearches()
+        .then(data => setSavedSearches(data))
+        .catch(err => console.error('Failed to fetch saved searches:', err))
+    } else {
+      setSavedSearches([])
+    }
+  }, [user])
 
-  const addToWatchlist = useCallback((flight) => {
-    setWatchlist((prev) => {
-      const isDupe = prev.some(
-        (f) => f.from === flight.from && f.to === flight.to && f.airline === flight.airline && f.departDate === flight.departDate
-      )
-      if (isDupe) return prev
-      return [{ ...flight, id: Date.now(), addedAt: new Date().toISOString() }, ...prev]
-    })
-  }, [])
+  const saveSearch = useCallback(async (flight) => {
+    if (!user) return false
+    try {
+      const saved = await api.createSavedSearch(flight)
+      setSavedSearches(prev => [saved, ...prev])
+      return true
+    } catch (err) {
+      console.error('Failed to save search:', err)
+      return false
+    }
+  }, [user])
 
-  const removeFromWatchlist = useCallback((id) => {
-    setWatchlist((prev) => prev.filter((f) => f.id !== id))
+  const removeSavedSearch = useCallback(async (id) => {
+    try {
+      await api.deleteSavedSearch(id)
+      setSavedSearches(prev => prev.filter(s => s.id !== id))
+    } catch (err) {
+      console.error('Failed to remove saved search:', err)
+    }
   }, [])
 
   // Check if we're on a dashboard route (uses its own layout)
@@ -65,7 +73,7 @@ export default function App() {
             <Route path="/dashboard/calendar" element={<CalendarPage />} />
             <Route path="/dashboard/routes" element={<RoutesPage />} />
             <Route path="/dashboard/action-center" element={<ActionCenterPage />} />
-            <Route path="/dashboard/watchlist" element={<WatchlistPage watchlist={watchlist} onRemove={removeFromWatchlist} />} />
+            <Route path="/dashboard/saved-searches" element={<SavedSearchesPage savedSearches={savedSearches} onRemove={removeSavedSearch} />} />
             {/* Future sub-pages: etc. */}
             <Route path="/dashboard/*" element={<DashboardPage />} />
           </Routes>
@@ -109,8 +117,8 @@ export default function App() {
             >
               <LayoutDashboard size={14} strokeWidth={2.2} />
               Dashboard
-              {watchlist.length > 0 && (
-                <span className="topnav-badge">{watchlist.length}</span>
+              {savedSearches.length > 0 && (
+                <span className="topnav-badge">{savedSearches.length}</span>
               )}
             </NavLink>
             <NavLink
@@ -158,8 +166,8 @@ export default function App() {
             path="/results"
             element={
               <ResultsPage
-                onAddToWatchlist={addToWatchlist}
-                watchlist={watchlist}
+                onSaveSearch={saveSearch}
+                savedSearches={savedSearches}
               />
             }
           />

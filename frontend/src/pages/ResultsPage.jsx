@@ -25,6 +25,7 @@ import {
   TrendingUp,
 } from 'lucide-react'
 import { api } from '../services/api'
+import { useAuth } from '../context/AuthContext'
 
 /* ── Helpers ───────────────────────────────────────── */
 function formatPrice(price) {
@@ -105,9 +106,10 @@ function TrendChartTooltip({ active, payload, label }) {
 }
 
 /* ── Main Page ─────────────────────────────────────── */
-export default function ResultsPage({ onAddToWatchlist, watchlist }) {
+export default function ResultsPage({ onSaveSearch, savedSearches = [] }) {
   const { state } = useLocation()
   const navigate = useNavigate()
+  const { user } = useAuth()
 
   /* Current search params (editable) */
   const [params, setParams] = useState(null)
@@ -119,7 +121,7 @@ export default function ResultsPage({ onAddToWatchlist, watchlist }) {
   const [error, setError] = useState(null)
 
   /* UI state */
-  const [addedToast, setAddedToast] = useState(false)
+  const [toastMsg, setToastMsg] = useState(null)
   const [editorOpen, setEditorOpen] = useState(false)
 
   /* Initialize params from navigation state */
@@ -211,21 +213,29 @@ export default function ResultsPage({ onAddToWatchlist, watchlist }) {
 
   const verdict = predictedPrice < 7600 ? 'Book now' : 'Wait and watch'
 
-  const isOnWatchlist = watchlist.some(
-    (f) => f.from === from && f.to === to && f.airline === airline && f.departDate === departDate
+  const isSavedSearch = savedSearches.some(
+    (f) => f.source_city === from && f.destination_city === to && f.flight_class === travelClass
   )
 
-  const handleAddToWatchlist = () => {
-    onAddToWatchlist({
-      from, to, airline, tripType, travelClass, stops,
-      departDate, returnDate, departureTime, arrivalTime,
-      duration, daysLeft,
-      priceContext: predictedPrice,
-      verdict,
-      trendDir: trendInsight.dir,
+  const handleSaveSearch = async () => {
+    if (!user) {
+      setToastMsg('Please log in to save searches.')
+      setTimeout(() => setToastMsg(null), 3000)
+      return
+    }
+
+    const success = await onSaveSearch({
+      source_city: from,
+      destination_city: to,
+      flight_class: travelClass,
     })
-    setAddedToast(true)
-    setTimeout(() => setAddedToast(false), 3000)
+    
+    if (success) {
+      setToastMsg('Search saved! View it in your Dashboard.')
+    } else {
+      setToastMsg('Failed to save search. Please try again.')
+    }
+    setTimeout(() => setToastMsg(null), 3000)
   }
 
   /* Param updater */
@@ -242,10 +252,10 @@ export default function ResultsPage({ onAddToWatchlist, watchlist }) {
   return (
     <section className="decision-page">
       {/* Toast */}
-      {addedToast && (
-        <div className="watchlist-toast" role="status">
+      {toastMsg && (
+        <div className="saved-search-toast" role="status">
           <BookmarkCheck size={16} />
-          Added to watchlist! View it in your Dashboard.
+          {toastMsg}
         </div>
       )}
 
@@ -299,14 +309,14 @@ export default function ResultsPage({ onAddToWatchlist, watchlist }) {
             </button>
             <button
               type="button"
-              className={`watchlist-btn ${isOnWatchlist ? 'watchlist-btn--saved' : ''}`}
-              onClick={handleAddToWatchlist}
-              disabled={isOnWatchlist || loading}
+              className={`saved-search-btn ${isSavedSearch ? 'saved-search-btn--saved' : ''}`}
+              onClick={handleSaveSearch}
+              disabled={isSavedSearch || loading}
             >
-              {isOnWatchlist ? (
-                <><BookmarkCheck size={15} strokeWidth={2.2} /> Saved to watchlist</>
+              {isSavedSearch ? (
+                <><BookmarkCheck size={15} strokeWidth={2.2} /> Search saved</>
               ) : (
-                <><Bookmark size={15} strokeWidth={2.2} /> Add to watchlist</>
+                <><Bookmark size={15} strokeWidth={2.2} /> Save search</>
               )}
             </button>
           </div>
@@ -554,21 +564,21 @@ export default function ResultsPage({ onAddToWatchlist, watchlist }) {
             </p>
           </article>
 
-          <article className="insight-card insight-card--watchlist-cta">
-            <span className="eyebrow">Track this flight</span>
-            <h3>Monitor price changes over time</h3>
+          <article className="insight-card insight-card--saved-search-cta">
+            <span className="eyebrow">Quick Access</span>
+            <h3>Save this route configuration</h3>
             <p>
-              Save this route to your watchlist and check back in your dashboard to see how fares evolve.
+              Save this search to your dashboard so you can quickly re-run the prediction anytime without re-entering parameters.
             </p>
             <button
               type="button"
-              className={`watchlist-btn watchlist-btn--full ${isOnWatchlist ? 'watchlist-btn--saved' : ''}`}
-              onClick={handleAddToWatchlist}
-              disabled={isOnWatchlist || loading}
+              className={`saved-search-btn saved-search-btn--full ${isSavedSearch ? 'saved-search-btn--saved' : ''}`}
+              onClick={handleSaveSearch}
+              disabled={isSavedSearch || loading}
             >
-              {isOnWatchlist
-                ? <><BookmarkCheck size={15} /> Saved to watchlist</>
-                : <><Bookmark size={15} /> Add to watchlist</>
+              {isSavedSearch
+                ? <><BookmarkCheck size={15} /> Search saved</>
+                : <><Bookmark size={15} /> Save search</>
               }
             </button>
           </article>
