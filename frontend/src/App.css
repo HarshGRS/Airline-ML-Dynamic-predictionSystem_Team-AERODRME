@@ -1602,18 +1602,6 @@ body {
     grid-template-columns: 1fr;
   }
 
-  .login-card {
-    grid-template-columns: 1fr;
-  }
-
-  .login-branding {
-    display: none;
-  }
-
-  .login-form-panel {
-    padding: 2rem 1.25rem;
-  }
-
   .hero-form-float {
     margin-bottom: 0.5rem;
   }
@@ -2763,6 +2751,8 @@ body {
   border: 1px solid var(--border-strong);
   background: var(--surface-input);
   box-shadow: 0 0 0 4px var(--accent-glow);
+  max-width: 100%;
+  overflow: hidden;
 }
 
 .login-terms {
@@ -2788,8 +2778,10 @@ body {
     max-width: 480px;
   }
 
+  /* Decorative marketing panel — dropped on mobile so the functional
+     form isn't pushed below the fold. */
   .login-branding {
-    padding: 2rem 1.75rem;
+    display: none;
   }
 
   .login-form-panel {
@@ -2846,10 +2838,6 @@ body {
 }
 
 @media (max-width: 640px) {
-  .user-name {
-    display: none;
-  }
-
   .user-menu {
     padding: 0.25rem;
     gap: 0.35rem;
