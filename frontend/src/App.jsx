@@ -101,7 +101,7 @@ export default function App() {
       {!isAuthPage && (
       <header className="topbar">
         <NavLink to="/" className="brand-mark" style={{ textDecoration: 'none' }}>
-          <div className="brand-icon">A</div>
+          <img src="/logo.png" alt="AERODROME" className="brand-icon" />
           <div>
             <strong>AERODROME</strong>
             <p>Flight pricing intelligence</p>
@@ -207,7 +207,7 @@ export default function App() {
       <footer className="platform-footer" id="footer">
         <div className="footer-brand">
           <div className="brand-mark footer-mark">
-            <div className="brand-icon">A</div>
+            <img src="/logo.png" alt="AERODROME" className="brand-icon" />
             <div>
               <strong>AERODROME</strong>
               <p>Flight booking with predictive insight</p>

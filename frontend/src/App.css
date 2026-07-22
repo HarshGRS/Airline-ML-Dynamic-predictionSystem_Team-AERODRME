@@ -114,13 +114,15 @@ body {
   height: 2.4rem;
   display: grid;
   place-items: center;
-  border-radius: 12px;
+  border-radius: 4px;
   background: linear-gradient(135deg, var(--indigo-400), var(--violet-500));
   color: #fff;
   font-weight: 800;
   font-size: 1rem;
   font-family: 'Space Grotesk', sans-serif;
   box-shadow: 0 4px 16px rgba(109, 94, 245, 0.55);
+  object-fit: cover;
+  flex-shrink: 0;
 }
 
 .brand-mark strong {

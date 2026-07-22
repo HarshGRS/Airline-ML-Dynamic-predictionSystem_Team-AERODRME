@@ -38,7 +38,7 @@ export default function ResetPasswordPage() {
       <div className="login-card">
         <div className="login-branding">
           <div className="login-brand-header">
-            <div className="brand-icon login-brand-icon">A</div>
+            <img src="/logo.png" alt="AERODROME" className="brand-icon login-brand-icon" />
             <div>
               <strong className="login-brand-name">AERODROME</strong>
               <p className="login-brand-sub">Flight pricing intelligence</p>

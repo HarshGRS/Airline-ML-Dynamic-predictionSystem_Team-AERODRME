@@ -59,7 +59,7 @@ export default function DashboardLayout({ children }) {
       {/* Sidebar */}
       <aside className={`console-sidebar ${sidebarOpen ? 'open' : ''}`}>
         <Link to="/" className="console-sidebar-brand" style={{ textDecoration: 'none' }}>
-          <div className="brand-icon">A</div>
+          <img src="/logo.png" alt="AERODROME" className="brand-icon" />
           <span className="console-sidebar-brand-name">AERODROME</span>
         </Link>
 
