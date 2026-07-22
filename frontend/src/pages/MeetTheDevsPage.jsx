@@ -8,16 +8,69 @@ import {
   Cpu,
   Server,
   Target,
+  
 } from 'lucide-react';
+import { FaGithub, FaLinkedin } from "react-icons/fa";
+import { TbWorld } from "react-icons/tb";
+
 
 const developers = [
-  { name: 'Dolly', image: '/Doly_dev.jpeg', position: 'center 15%', role: 'ML Developer' },
-  { name: 'Sharad Kumar', image: '/Sharad_dev.jpeg', position: 'center 30%', role: 'Full-Stack Developer' },
-  { name: 'Sumit Kumar', image: '/sumit_dev.jpg', position: 'center 15%', role: 'Full-Stack Developer' },
-    { name: 'Harsh Raj Singh', image: '/Harsh_dev.jpeg', position: 'center 10%', role: 'Full-Stack Developer' },
-  { name: 'Ayushi Dubey', image: '/Ayushi_dev.jpeg', position: 'center 10%', role: 'Frontend Developer' },
-  { name: 'Nitin Khulbe', image: '/Nitin_dev.jpeg', position: 'center 20%', role: 'Frontend Developer' },
-  { name: 'Vaibhav', image: '/vaibhav_dev.jpeg', position: 'center 25%', role: 'Frontend Developer' },
+  { name: 'Dolly', 
+    image: '/Dolly_dev.jpeg',
+     position: 'center 15%',
+      role: 'ML Developer' ,
+      github: "https://github.com/dolly-bit",
+      linkedin: "https://www.linkedin.com/in/dolly-kumari-61a2b634a/",
+      portfolio: "https://dolly06-portfolio.vercel.app/",
+    },
+  { name: 'Sharad Kumar', 
+    image: '/Sharad_dev.jpeg', 
+    position: 'center 30%', 
+    role: 'Full-Stack Developer' ,
+    github: "https://github.com/sherrykeos",
+    linkedin: "https://www.linkedin.com/in/sharad--kumar/",
+    portfolio: "https://www.sherryk.dev/",
+    
+  },
+  { name: 'Sumit Kumar', 
+    image: '/sumit_dev.jpg',
+     position: 'center 15%', 
+     role: 'Full-Stack Developer',
+    github: "https://github.com/sumitDev11",
+    linkedin: "https://www.linkedin.com/in/sumit-kumar-64484a2b2/",
+    portfolio: "https://sumitkumar-website.vercel.app/",
+   },
+    { name: 'Harsh Raj Singh', 
+      image: '/Harsh_dev.jpeg', 
+      position: 'center 10%', 
+      role: 'Full-Stack Developer' ,
+      github: "#",
+      linkedin: "#",
+      portfolio: "#",
+    },
+  { name: 'Ayushi Dubey', 
+    image: '/Ayushi_dev.jpeg', 
+    position: 'center 10%', 
+    role: 'Frontend Developer',
+    github: "#",
+    linkedin: "#",
+    portfolio: "#", 
+  },
+  { name: 'Nitin Khulbe', 
+    image: '/Nitin_dev.jpeg', 
+    position: 'center 20%', 
+    role: 'Frontend Developer',
+    github: "#",
+    linkedin: "#",
+    portfolio: "#",
+       },
+  { name: 'Vaibhav', 
+    image: '/vaibhav_dev.jpeg', 
+    position: 'center 25%', 
+    role: 'Frontend Developer' ,
+    github: "#",
+    linkedin: "#",
+    portfolio: "#",},
 ];
 
 const aboutHighlights = [
@@ -178,7 +231,30 @@ export default function MeetTheDevsPage() {
               </div>
               <h3 className="dev-name">{dev.name}</h3>
               <span className="dev-role">{dev.role}</span>
-            </div>
+              <div className="dev-socials">
+                <a 
+                href={dev.github}
+                target="_blank"
+                rel='noopener noreferrer'
+                >
+                  <FaGithub size={20}  />
+                  </a>
+                <a 
+                href={dev.linkedin}
+                target="_blank"
+                rel='noopener noreferrer'
+                >
+                  <FaLinkedin size={20}  />
+                  </a>
+                <a 
+                href={dev.portfolio}
+                target="_blank"
+                rel='noopener noreferrer'
+                >
+                  <TbWorld size={20}  />
+                  </a>
+                  </div>
+                  </div>
           ))}
         </div>
       </div>
