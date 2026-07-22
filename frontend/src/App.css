@@ -3208,3 +3208,36 @@ body {
   background: rgba(34, 211, 238, 0.15);
   color: var(--cyan-400);
 }
+
+
+.dev-socials {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 0.9rem;
+}
+
+.dev-socials a {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 2.4rem;
+  height: 2.4rem;
+  border-radius: 50%;
+  color: #9ca3af;
+  background: rgba(255, 255, 255, 0.05);
+  transition: all 0.3s ease;
+}
+
+.dev-socials a:hover {
+  color: #3b82f6;
+  background: rgba(59, 130, 246, 0.12);
+  transform: translateY(-0.2rem) scale(1.08);
+  box-shadow: 0 0 0.75rem rgba(59, 130, 246, 0.3);
+}
+
+.dev-socials svg {
+  width: 1.2rem;
+  height: 1.2rem;
+}
