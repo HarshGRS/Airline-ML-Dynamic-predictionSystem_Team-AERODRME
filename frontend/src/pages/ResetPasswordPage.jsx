@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
-import { Plane, TrendingUp, Bell, Shield } from 'lucide-react'
+import { Plane, TrendingUp, Shield } from 'lucide-react'
 import { api } from '../services/api'
 
 export default function ResetPasswordPage() {
@@ -60,10 +60,6 @@ export default function ResetPasswordPage() {
             <li>
               <span className="login-feature-icon"><TrendingUp size={16} /></span>
               ML-powered price predictions
-            </li>
-            <li>
-              <span className="login-feature-icon"><Bell size={16} /></span>
-              Price drop alerts & watchlists
             </li>
             <li>
               <span className="login-feature-icon"><Shield size={16} /></span>

@@ -2,7 +2,7 @@ import { GoogleLogin } from '@react-oauth/google'
 import { Navigate, Link } from 'react-router-dom'
 import { useState } from 'react'
 import { useAuth } from '../context/AuthContext'
-import { Plane, TrendingUp, Bell, Shield } from 'lucide-react'
+import { Plane, TrendingUp, Shield } from 'lucide-react'
 
 export default function RegisterPage() {
   const { user, loginWithGoogle, signup } = useAuth()
@@ -65,10 +65,6 @@ export default function RegisterPage() {
             <li>
               <span className="login-feature-icon"><TrendingUp size={16} /></span>
               ML-powered price predictions
-            </li>
-            <li>
-              <span className="login-feature-icon"><Bell size={16} /></span>
-              Price drop alerts & watchlists
             </li>
             <li>
               <span className="login-feature-icon"><Shield size={16} /></span>

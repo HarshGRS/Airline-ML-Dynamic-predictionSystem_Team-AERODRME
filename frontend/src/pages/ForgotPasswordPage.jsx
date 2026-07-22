@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Plane, TrendingUp, Bell, Shield } from 'lucide-react'
+import { Plane, TrendingUp, Shield } from 'lucide-react'
 import { api } from '../services/api'
 
 export default function ForgotPasswordPage() {
@@ -51,10 +51,6 @@ export default function ForgotPasswordPage() {
             <li>
               <span className="login-feature-icon"><TrendingUp size={16} /></span>
               ML-powered price predictions
-            </li>
-            <li>
-              <span className="login-feature-icon"><Bell size={16} /></span>
-              Price drop alerts & watchlists
             </li>
             <li>
               <span className="login-feature-icon"><Shield size={16} /></span>
